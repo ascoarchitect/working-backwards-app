@@ -1,0 +1,345 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  working-backwards-backend
+
+  SAM Template for Working Backwards Workshop Application
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+    Environment:
+      Variables:
+        WORKSHOPS_TABLE: !Ref WorkshopsTable
+        PARTICIPANTS_TABLE: !Ref ParticipantsTable
+        PAIN_POINTS_TABLE: !Ref PainPointsTable
+        USE_CASES_TABLE: !Ref UseCasesTable
+        ACTION_PLANS_TABLE: !Ref ActionPlansTable
+        CORS_ORIGIN: '*'  # Update with specific domain in production
+
+Resources:
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"  # Update with specific domain in production
+
+  WorkshopsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WorkshopsTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  ParticipantsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ParticipantsTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: workshopId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: WorkshopIndex
+          KeySchema:
+            - AttributeName: workshopId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  PainPointsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: PainPointsTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: workshopId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: WorkshopIndex
+          KeySchema:
+            - AttributeName: workshopId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  UseCasesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UseCasesTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: workshopId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: WorkshopIndex
+          KeySchema:
+            - AttributeName: workshopId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  ActionPlansTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ActionPlansTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: useCaseId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UseCaseIndex
+          KeySchema:
+            - AttributeName: useCaseId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET]
+            AllowedOrigins: ['*']
+            MaxAge: 3600
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Principal: "*"
+
+  WorkshopsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/workshops/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WorkshopsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
+      Events:
+        GetWorkshops:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops
+            Method: get
+        CreateWorkshop:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops
+            Method: post
+        GetWorkshop:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{id}
+            Method: get
+        UpdateWorkshop:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{id}
+            Method: put
+
+  ParticipantsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/participants/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
+      Events:
+        GetParticipants:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/participants
+            Method: get
+        AddParticipant:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/participants
+            Method: post
+
+  PainPointsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/painpoints/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PainPointsTable
+      Events:
+        GetPainPoints:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/painpoints
+            Method: get
+        AddPainPoint:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/painpoints
+            Method: post
+        ConsolidatePainPoints:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/painpoints/consolidate
+            Method: post
+
+  UseCasesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/usecases/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UseCasesTable
+      Events:
+        GetUseCases:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/usecases
+            Method: get
+        CreateUseCase:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/usecases
+            Method: post
+        UpdateUseCase:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/usecases/{id}
+            Method: put
+        ScoreUseCases:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshops/{workshopId}/usecases/score
+            Method: post
+
+  ActionPlansFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/actionplans/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActionPlansTable
+      Events:
+        GetActionPlans:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /usecases/{useCaseId}/actionplans
+            Method: get
+        CreateActionPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /usecases/{useCaseId}/actionplans
+            Method: post
+        UpdateActionPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /usecases/{useCaseId}/actionplans/{id}
+            Method: put
+
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/auth/
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
+      Events:
+        Login:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/login
+            Method: post
+        Register:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/register
+            Method: post
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+  FrontendURL:
+    Description: "URL for the frontend website"
+    Value: !GetAtt FrontendBucket.WebsiteURL
