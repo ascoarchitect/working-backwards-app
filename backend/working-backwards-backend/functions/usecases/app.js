@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const useCaseTable = process.env.USE_CASES_TABLE;
-const painPointTable = process.env.PAIN_POINTS_TABLE;
 const participantTable = process.env.PARTICIPANTS_TABLE;
 const jwtSecret = process.env.JWT_SECRET;
 

@@ -208,7 +208,7 @@ const createActionPlan = async (event) => {
 
 const updateActionPlan = async (event) => {
   try {
-    const { useCaseId, id } = event.pathParameters;
+    const { id, useCaseId: _ } = event.pathParameters;
     const { 
       title, 
       description, 

@@ -1,14 +1,14 @@
-const AWS = require("aws-sdk");
-const { v4: uuidv4 } = require("uuid");
+const AWS = require('aws-sdk');
+const { v4: uuidv4 } = require('uuid');
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const WORKSHOPS_TABLE = process.env.WORKSHOPS_TABLE;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 // Helper function for CORS headers
 const corsHeaders = {
-  "Access-Control-Allow-Origin": CORS_ORIGIN,
-  "Access-Control-Allow-Credentials": true,
-  "Content-Type": "application/json"
+  'Access-Control-Allow-Origin': CORS_ORIGIN,
+  'Access-Control-Allow-Credentials': true,
+  'Content-Type': 'application/json'
 };
 
 // Helper function for responses
@@ -30,8 +30,8 @@ const getWorkshops = async () => {
     const result = await dynamoDB.scan(params).promise();
     return response(200, result.Items);
   } catch (error) {
-    console.error("Error getting workshops:", error);
-    return response(500, { error: "Could not retrieve workshops" });
+    console.error('Error getting workshops:', error);
+    return response(500, { error: 'Could not retrieve workshops' });
   }
 };
 
@@ -42,15 +42,15 @@ const createWorkshop = async (event) => {
     const { name, description, facilitator } = body;
     
     if (!name || !facilitator) {
-      return response(400, { error: "Workshop name and facilitator are required" });
+      return response(400, { error: 'Workshop name and facilitator are required' });
     }
     
     const workshop = {
       id: uuidv4(),
       name,
-      description: description || "",
+      description: description || '',
       facilitator,
-      status: "active",
+      status: 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -63,8 +63,8 @@ const createWorkshop = async (event) => {
     await dynamoDB.put(params).promise();
     return response(201, workshop);
   } catch (error) {
-    console.error("Error creating workshop:", error);
-    return response(500, { error: "Could not create workshop" });
+    console.error('Error creating workshop:', error);
+    return response(500, { error: 'Could not create workshop' });
   }
 };
 
@@ -83,13 +83,13 @@ const getWorkshop = async (event) => {
     const result = await dynamoDB.get(params).promise();
     
     if (!result.Item) {
-      return response(404, { error: "Workshop not found" });
+      return response(404, { error: 'Workshop not found' });
     }
     
     return response(200, result.Item);
   } catch (error) {
-    console.error("Error getting workshop:", error);
-    return response(500, { error: "Could not retrieve workshop" });
+    console.error('Error getting workshop:', error);
+    return response(500, { error: 'Could not retrieve workshop' });
   }
 };
 
@@ -110,7 +110,7 @@ const updateWorkshop = async (event) => {
     const workshopResult = await dynamoDB.get(getParams).promise();
     
     if (!workshopResult.Item) {
-      return response(404, { error: "Workshop not found" });
+      return response(404, { error: 'Workshop not found' });
     }
     
     // Update fields
@@ -121,36 +121,36 @@ const updateWorkshop = async (event) => {
     const expressionAttributeValues = {};
     
     if (name) {
-      updateExpressions.push("#name = :name");
-      expressionAttributeNames["#name"] = "name";
-      expressionAttributeValues[":name"] = name;
+      updateExpressions.push('#name = :name');
+      expressionAttributeNames['#name'] = 'name';
+      expressionAttributeValues[':name'] = name;
     }
     
     if (description !== undefined) {
-      updateExpressions.push("#description = :description");
-      expressionAttributeNames["#description"] = "description";
-      expressionAttributeValues[":description"] = description;
+      updateExpressions.push('#description = :description');
+      expressionAttributeNames['#description'] = 'description';
+      expressionAttributeValues[':description'] = description;
     }
     
     if (facilitator) {
-      updateExpressions.push("#facilitator = :facilitator");
-      expressionAttributeNames["#facilitator"] = "facilitator";
-      expressionAttributeValues[":facilitator"] = facilitator;
+      updateExpressions.push('#facilitator = :facilitator');
+      expressionAttributeNames['#facilitator'] = 'facilitator';
+      expressionAttributeValues[':facilitator'] = facilitator;
     }
     
     if (status) {
-      updateExpressions.push("#status = :status");
-      expressionAttributeNames["#status"] = "status";
-      expressionAttributeValues[":status"] = status;
+      updateExpressions.push('#status = :status');
+      expressionAttributeNames['#status'] = 'status';
+      expressionAttributeValues[':status'] = status;
     }
     
     // Always update the updatedAt timestamp
-    updateExpressions.push("#updatedAt = :updatedAt");
-    expressionAttributeNames["#updatedAt"] = "updatedAt";
-    expressionAttributeValues[":updatedAt"] = new Date().toISOString();
+    updateExpressions.push('#updatedAt = :updatedAt');
+    expressionAttributeNames['#updatedAt'] = 'updatedAt';
+    expressionAttributeValues[':updatedAt'] = new Date().toISOString();
     
     if (updateExpressions.length === 0) {
-      return response(400, { error: "No fields to update" });
+      return response(400, { error: 'No fields to update' });
     }
     
     const updateParams = {
@@ -158,47 +158,47 @@ const updateWorkshop = async (event) => {
       Key: {
         id: workshopId
       },
-      UpdateExpression: "SET " + updateExpressions.join(", "),
+      UpdateExpression: 'SET ' + updateExpressions.join(', '),
       ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
-      ReturnValues: "ALL_NEW"
+      ReturnValues: 'ALL_NEW'
     };
     
     const result = await dynamoDB.update(updateParams).promise();
     return response(200, result.Attributes);
   } catch (error) {
-    console.error("Error updating workshop:", error);
-    return response(500, { error: "Could not update workshop" });
+    console.error('Error updating workshop:', error);
+    return response(500, { error: 'Could not update workshop' });
   }
 };
 
 // Main handler
 exports.handler = async (event) => {
-  console.log("Event:", JSON.stringify(event));
+  console.log('Event:', JSON.stringify(event));
   
   // Handle OPTIONS requests for CORS
-  if (event.httpMethod === "OPTIONS") {
+  if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: {
-        "Access-Control-Allow-Origin": CORS_ORIGIN,
-        "Access-Control-Allow-Headers": "Content-Type,Authorization",
-        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"
+        'Access-Control-Allow-Origin': CORS_ORIGIN,
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
       },
-      body: ""
+      body: ''
     };
   }
   
   // Route requests
-  if (event.httpMethod === "GET" && !event.pathParameters) {
+  if (event.httpMethod === 'GET' && !event.pathParameters) {
     return getWorkshops();
-  } else if (event.httpMethod === "POST" && !event.pathParameters) {
+  } else if (event.httpMethod === 'POST' && !event.pathParameters) {
     return createWorkshop(event);
-  } else if (event.httpMethod === "GET" && event.pathParameters && event.pathParameters.id) {
+  } else if (event.httpMethod === 'GET' && event.pathParameters && event.pathParameters.id) {
     return getWorkshop(event);
-  } else if (event.httpMethod === "PUT" && event.pathParameters && event.pathParameters.id) {
+  } else if (event.httpMethod === 'PUT' && event.pathParameters && event.pathParameters.id) {
     return updateWorkshop(event);
   } else {
-    return response(400, { error: "Invalid request" });
+    return response(400, { error: 'Invalid request' });
   }
 };

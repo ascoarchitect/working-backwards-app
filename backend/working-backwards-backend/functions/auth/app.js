@@ -64,7 +64,8 @@ const register = async (event) => {
 
     const token = generateToken(newUser);
 
-    const { password: _, ...userWithoutPassword } = newUser;
+    const userWithoutPassword = { ...newUser };
+    delete userWithoutPassword.password;
 
     return {
       statusCode: 201,
@@ -135,7 +136,8 @@ const login = async (event) => {
 
     const token = generateToken(user);
 
-    const { password: _, ...userWithoutPassword } = user;
+    const userWithoutPassword = { ...user };
+    delete userWithoutPassword.password;
 
     return {
       statusCode: 200,
@@ -201,7 +203,8 @@ const getCurrentUser = async (event) => {
       };
     }
 
-    const { password, ...userWithoutPassword } = result.Item;
+    const userWithoutPassword = { ...result.Item };
+    delete userWithoutPassword.password;
 
     return {
       statusCode: 200,
