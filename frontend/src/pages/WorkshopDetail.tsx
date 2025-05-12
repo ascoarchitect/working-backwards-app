@@ -23,7 +23,7 @@ const WorkshopDetail: React.FC = () => {
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
   const [newParticipant, setNewParticipant] = useState({
     name: '',
@@ -31,7 +31,7 @@ const WorkshopDetail: React.FC = () => {
     role: 'participant',
   });
   
-  const { user } = useAuth();
+  useAuth();
   
   useEffect(() => {
     const mockWorkshop: Workshop = {

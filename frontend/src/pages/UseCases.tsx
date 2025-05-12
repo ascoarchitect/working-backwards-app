@@ -27,7 +27,7 @@ const UseCases: React.FC = () => {
   const [useCases, setUseCases] = useState<UseCase[]>([]);
   const [painPoints, setPainPoints] = useState<ConsolidatedPainPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [selectedUseCase, setSelectedUseCase] = useState<UseCase | null>(null);
@@ -44,7 +44,7 @@ const UseCases: React.FC = () => {
     timeToValue: 3,
   });
   
-  const { user } = useAuth();
+  useAuth();
   
   useEffect(() => {
     const mockUseCases: UseCase[] = [

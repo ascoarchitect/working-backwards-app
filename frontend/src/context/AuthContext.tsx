@@ -32,7 +32,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     try {
       const mockUser: User = {
         id: '1',
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: 'participant' | 'facilitator') => {
+  const register = async (name: string, email: string, _password: string, role: 'participant' | 'facilitator') => {
     try {
       const mockUser: User = {
         id: '1',

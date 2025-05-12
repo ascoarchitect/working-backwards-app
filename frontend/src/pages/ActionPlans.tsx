@@ -34,7 +34,7 @@ const ActionPlans: React.FC = () => {
   const [useCases, setUseCases] = useState<UseCase[]>([]);
   const [actionPlans, setActionPlans] = useState<ActionPlan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const [selectedActionPlan, setSelectedActionPlan] = useState<ActionPlan | null>(null);
@@ -52,7 +52,7 @@ const ActionPlans: React.FC = () => {
     dueDate: '',
   });
   
-  const { user } = useAuth();
+  useAuth();
   
   useEffect(() => {
     const mockUseCases: UseCase[] = [

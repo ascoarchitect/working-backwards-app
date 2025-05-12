@@ -14,7 +14,7 @@ interface Workshop {
 const Dashboard: React.FC = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWorkshop, setNewWorkshop] = useState({
     name: '',
