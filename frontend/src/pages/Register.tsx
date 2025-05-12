@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -21,7 +21,7 @@ const Register: React.FC = () => {
     try {
       await register(name, email, password, role);
       navigate('/dashboard');
-    } catch (_error) {
+    } catch {
       setError('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
