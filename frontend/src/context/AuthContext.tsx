@@ -17,13 +17,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -32,7 +32,8 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
 
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string, password: string) => {
+    console.log(`Attempting login with email: ${email} and password length: ${password.length}`);
     try {
       const mockUser: User = {
         id: '1',
