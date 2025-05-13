@@ -75,103 +75,291 @@ const PrintableForms: React.FC = () => {
               </div>
 
               <div className="p-4 print:p-0" ref={printRef}>
-                {/* Pain Points Form */}
+                {/* Pain Points Form - Page 1 */}
                 {activeForm === 'painpoints' && (
-                  <div className="print:block print:page-break-after-always">
-                    <div className="print:text-center print:mb-4">
-                      <h2 className="text-xl font-bold print:text-2xl">Working Backwards Workshop</h2>
-                      <h3 className="text-lg font-semibold print:text-xl">Step 1: Pain Points Identification</h3>
-                      <div className="print:mt-2 print:text-sm">
-                        <p>Workshop Name: ___________________________</p>
-                        <p>Date: ___________________________</p>
-                        <p>Facilitator: ___________________________</p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 print:mt-4">
-                      <h4 className="text-md font-medium">Participant Information</h4>
-                      <div className="mt-2 border border-gray-300 rounded-md p-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Name</label>
-                            <div className="mt-1 border-b border-gray-300 h-6"></div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Role</label>
-                            <div className="mt-1 border-b border-gray-300 h-6"></div>
-                          </div>
+                  <>
+                    {/* Pain Points Submission Form - Page 1 */}
+                    <div className="print:block print:page-break-after-always">
+                      {/* Two-column header layout */}
+                      <div className="flex justify-between items-start print:mb-2">
+                        <div className="print:text-left">
+                          <h2 className="text-lg font-bold print:text-lg">Working Backwards Workshop</h2>
+                          <h3 className="text-md font-semibold print:text-md">Step 1: Pain Points Identification</h3>
+                        </div>
+                        <div className="print:text-right print:text-sm">
+                          <p>Workshop Name: ___________________________</p>
+                          <p>Date: ___________________________</p>
+                          <p>Facilitator: ___________________________</p>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mt-6 print:mt-4">
-                      <h4 className="text-md font-medium">Pain Point Submission</h4>
-                      <div className="mt-2 border border-gray-300 rounded-md p-3">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Description</label>
-                            <div className="mt-1 border border-gray-300 rounded-md h-20"></div>
+                      {/* Two pain point forms on one page */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
+                        {/* First Pain Point Form */}
+                        <div className="border border-gray-300 rounded-md p-3 print:text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium">Pain Point Submission</h4>
+                            <div className="border border-gray-300 rounded-md h-6 w-10 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">Ref #</span>
+                            </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          
+                          <div className="space-y-2">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">Category</label>
-                              <div className="mt-1 flex items-center space-x-4">
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">Process</span>
+                              <label className="block text-xs font-medium text-gray-700">Participant Name</label>
+                              <div className="mt-1 border-b border-gray-300 h-5"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Role</label>
+                              <div className="mt-1 border-b border-gray-300 h-5"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Description</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-16"></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Category</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Process</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Technology</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">People</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">Technology</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">People</span>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Impact</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Low</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Medium</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">High</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                          </div>
+                        </div>
+
+                        {/* Second Pain Point Form */}
+                        <div className="border border-gray-300 rounded-md p-3 print:text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium">Pain Point Submission</h4>
+                            <div className="border border-gray-300 rounded-md h-6 w-10 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">Ref #</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700">Impact</label>
-                              <div className="mt-1 flex items-center space-x-4">
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">Low</span>
+                              <label className="block text-xs font-medium text-gray-700">Participant Name</label>
+                              <div className="mt-1 border-b border-gray-300 h-5"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Role</label>
+                              <div className="mt-1 border-b border-gray-300 h-5"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Description</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-16"></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Category</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Process</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Technology</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">People</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">Medium</span>
-                                </div>
-                                <div className="flex items-center">
-                                  <div className="h-4 w-4 border border-gray-300 rounded-sm"></div>
-                                  <span className="ml-2 text-sm">High</span>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Impact</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Low</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Medium</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">High</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mt-6 print:mt-4">
-                      <h4 className="text-md font-medium">Pain Point Consolidation</h4>
-                      <div className="mt-2 border border-gray-300 rounded-md p-3">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Related Pain Points (List IDs or descriptions)</label>
-                            <div className="mt-1 border border-gray-300 rounded-md h-16"></div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">Consolidated Description</label>
-                            <div className="mt-1 border border-gray-300 rounded-md h-20"></div>
-                          </div>
-                        </div>
+                      <div className="mt-4 print:text-xs text-gray-500 italic">
+                        <p>This form is for offline workshop facilitation. Data collected on this form should be entered into the Working Backwards application later.</p>
                       </div>
                     </div>
 
-                    <div className="mt-6 print:mt-4 print:text-xs text-gray-500 italic">
-                      <p>This form is for offline workshop facilitation. Data collected on this form should be entered into the Working Backwards application later.</p>
+                    {/* Pain Points Consolidation Form - Page 2 */}
+                    <div className="print:block print:page-break-after-always">
+                      {/* Two-column header layout */}
+                      <div className="flex justify-between items-start print:mb-2">
+                        <div className="print:text-left">
+                          <h2 className="text-lg font-bold print:text-lg">Working Backwards Workshop</h2>
+                          <h3 className="text-md font-semibold print:text-md">Step 1: Pain Points Consolidation</h3>
+                        </div>
+                        <div className="print:text-right print:text-sm">
+                          <p>Workshop Name: ___________________________</p>
+                          <p>Date: ___________________________</p>
+                          <p>Facilitator: ___________________________</p>
+                        </div>
+                      </div>
+
+                      {/* Two consolidation forms on one page */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
+                        {/* First Consolidation Form */}
+                        <div className="border border-gray-300 rounded-md p-3 print:text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium">Pain Point Consolidation</h4>
+                            <div className="border border-gray-300 rounded-md h-6 w-10 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">Ref #</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Related Pain Points (List Ref #s)</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-12"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Consolidated Description</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-16"></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Category</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Process</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Technology</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">People</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Priority</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Low</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Medium</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">High</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Second Consolidation Form */}
+                        <div className="border border-gray-300 rounded-md p-3 print:text-sm">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium">Pain Point Consolidation</h4>
+                            <div className="border border-gray-300 rounded-md h-6 w-10 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">Ref #</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Related Pain Points (List Ref #s)</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-12"></div>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-700">Consolidated Description</label>
+                              <div className="mt-1 border border-gray-300 rounded-md h-16"></div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Category</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Process</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Technology</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">People</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700">Priority</label>
+                                <div className="mt-1 flex flex-col space-y-1">
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Low</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">Medium</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <div className="h-3 w-3 border border-gray-300 rounded-sm"></div>
+                                    <span className="ml-1 text-xs">High</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 print:text-xs text-gray-500 italic">
+                        <p>This form is for offline workshop facilitation. Data collected on this form should be entered into the Working Backwards application later.</p>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
 
                 {/* Use Cases Form */}
