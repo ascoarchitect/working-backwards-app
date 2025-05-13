@@ -127,15 +127,53 @@ Resources:
   FrontendBucket:
     Type: AWS::S3::Bucket
     Properties:
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: index.html
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders: ['*']
             AllowedMethods: [GET]
             AllowedOrigins: ['*']
             MaxAge: 3600
+
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-OAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            Id: S3Origin
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        Enabled: true
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100  # Use only North America and Europe
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: S3Origin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingDisabled policy ID
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
 
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -146,7 +184,11 @@ Resources:
           - Action: s3:GetObject
             Effect: Allow
             Resource: !Sub "${FrontendBucket.Arn}/*"
-            Principal: "*"
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution.Id}"
 
   WorkshopsFunction:
     Type: AWS::Serverless::Function
