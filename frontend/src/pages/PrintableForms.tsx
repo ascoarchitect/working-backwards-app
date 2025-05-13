@@ -224,7 +224,7 @@ const PrintableForms: React.FC = () => {
                     </div>
 
                     {/* Pain Points Consolidation Form - Page 2 */}
-                    <div className="print:block print:page-break-after-always">
+                    <div className="print:block print:page-break-after-always mt-8 print:mt-0">
                       {/* Two-column header layout */}
                       <div className="flex justify-between items-start print:mb-2">
                         <div className="print:text-left">
