@@ -117,7 +117,19 @@ export const useCasesAPI = {
     const response = await api.post(`/workshop-usecases/${workshopId}`, data);
     return response.data;
   },
-  update: async (workshopId: string, useCaseId: string, data: any) => {
+  update: async (workshopId: string, useCaseId: string, data: {
+    title?: string;
+    problemStatement?: string;
+    currentProcess?: string;
+    desiredOutcome?: string;
+    metrics?: string;
+    painPoints?: string[];
+    scores?: {
+      businessImpact?: number;
+      implementationFeasibility?: number;
+      timeToValue?: number;
+    };
+  }) => {
     const response = await api.put(`/workshop-usecases/${workshopId}/usecase/${useCaseId}`, data);
     return response.data;
   },
@@ -149,7 +161,19 @@ export const actionPlansAPI = {
     const response = await api.post(`/workshop-actionplans/${workshopId}`, { ...data, useCaseId });
     return response.data;
   },
-  update: async (workshopId: string, actionPlanId: string, data: any) => {
+  update: async (workshopId: string, actionPlanId: string, data: {
+    title?: string;
+    description?: string;
+    tasks?: Array<{
+      id?: string;
+      description: string;
+      owner: string;
+      dueDate: string;
+      status?: 'not_started' | 'in_progress' | 'completed';
+    }>;
+    owner?: string;
+    status?: 'not_started' | 'in_progress' | 'completed';
+  }) => {
     const response = await api.put(`/workshop-actionplans/${workshopId}/actionplan/${actionPlanId}`, data);
     return response.data;
   },

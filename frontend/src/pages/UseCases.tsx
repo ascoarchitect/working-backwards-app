@@ -18,6 +18,18 @@ interface UseCase {
   updatedAt: string;
 }
 
+interface PainPoint {
+  id: string;
+  workshopId: string;
+  title: string;
+  description: string;
+  submittedBy: string;
+  category?: string;
+  isConsolidated?: boolean;
+  sourceIds?: string[];
+  createdAt: string;
+}
+
 interface ConsolidatedPainPoint {
   id: string;
   description: string;
@@ -59,8 +71,8 @@ const UseCases: React.FC = () => {
         
         const painPointsData = await painPointsAPI.getByWorkshop(workshopId);
         const consolidatedPainPoints = painPointsData
-          .filter((p: any) => p.category === 'consolidated' || p.isConsolidated)
-          .map((p: any) => ({
+          .filter((p: PainPoint) => p.category === 'consolidated' || p.isConsolidated)
+          .map((p: PainPoint) => ({
             id: p.id,
             description: p.description
           }));
