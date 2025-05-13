@@ -299,6 +299,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PainPointsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
       Events:
         GetPainPoints:
           Type: Api
