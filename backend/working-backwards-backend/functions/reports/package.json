@@ -1,0 +1,10 @@
+{
+  "name": "reports-function",
+  "version": "1.0.0",
+  "description": "Reports Lambda function for Working Backwards app",
+  "main": "app.js",
+  "dependencies": {
+    "aws-sdk": "^2.1550.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
