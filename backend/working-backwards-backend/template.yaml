@@ -54,8 +54,6 @@ Resources:
           AttributeType: S
         - AttributeName: userId
           AttributeType: S
-        - AttributeName: email
-          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH

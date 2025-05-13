@@ -264,11 +264,11 @@ exports.handler = async (event) => {
   const path = event.path;
   const method = event.httpMethod;
 
-  if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/painpoints$/) && method === 'GET') {
+  if (path.match(/^\/workshop-painpoints\/[a-zA-Z0-9-]+$/) && method === 'GET') {
     return getPainPoints(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/painpoints$/) && method === 'POST') {
+  } else if (path.match(/^\/workshop-painpoints\/[a-zA-Z0-9-]+$/) && method === 'POST') {
     return addPainPoint(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/painpoints\/consolidate$/) && method === 'POST') {
+  } else if (path.match(/^\/workshop-painpoints\/[a-zA-Z0-9-]+\/consolidate$/) && method === 'POST') {
     return consolidatePainPoints(event);
   } else {
     return {
