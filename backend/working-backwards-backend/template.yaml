@@ -245,13 +245,13 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/participants
+            Path: /workshop-participants/{workshopId}
             Method: get
         AddParticipant:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/participants
+            Path: /workshop-participants/{workshopId}
             Method: post
 
   PainPointsFunction:
@@ -270,19 +270,19 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/painpoints
+            Path: /workshop-painpoints/{workshopId}
             Method: get
         AddPainPoint:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/painpoints
+            Path: /workshop-painpoints/{workshopId}
             Method: post
         ConsolidatePainPoints:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/painpoints/consolidate
+            Path: /workshop-painpoints/{workshopId}/consolidate
             Method: post
 
   UseCasesFunction:
@@ -301,25 +301,25 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/usecases
+            Path: /workshop-usecases/{workshopId}
             Method: get
         CreateUseCase:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/usecases
+            Path: /workshop-usecases/{workshopId}
             Method: post
         UpdateUseCase:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/usecases/{id}
+            Path: /workshop-usecases/{workshopId}/usecase/{id}
             Method: put
         ScoreUseCases:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshops/{workshopId}/usecases/score
+            Path: /workshop-usecases/{workshopId}/score
             Method: post
 
   ActionPlansFunction:
