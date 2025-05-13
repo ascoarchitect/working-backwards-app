@@ -1,0 +1,6 @@
+node_modules
+sam-installation
+.aws-sam
+dist
+build
+.env
