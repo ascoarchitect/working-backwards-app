@@ -9,6 +9,7 @@ import PainPoints from './pages/PainPoints';
 import UseCases from './pages/UseCases';
 import ActionPlans from './pages/ActionPlans';
 import Report from './pages/Report';
+import PrintableForms from './pages/PrintableForms';
 
 import { AuthProvider } from './context/AuthContext';
 
@@ -25,6 +26,8 @@ function App() {
           <Route path="/workshops/:id/usecases" element={<UseCases />} />
           <Route path="/usecases/:id/actionplans" element={<ActionPlans />} />
           <Route path="/workshops/:id/report" element={<Report />} />
+          <Route path="/printable-forms" element={<PrintableForms />} />
+          <Route path="/printable-forms/:id" element={<PrintableForms />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
