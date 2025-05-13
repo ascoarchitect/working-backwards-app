@@ -1,0 +1,11 @@
+{
+  "name": "usecases-function",
+  "version": "1.0.0",
+  "description": "Use Cases Lambda function for Working Backwards app",
+  "main": "app.js",
+  "dependencies": {
+    "aws-sdk": "^2.1550.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  }
+}
