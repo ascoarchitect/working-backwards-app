@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { workshopsAPI, participantsAPI } from '../services/api';
 
 interface Workshop {
   id: string;
@@ -23,7 +24,7 @@ const WorkshopDetail: React.FC = () => {
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error] = useState('');
+  const [error, setError] = useState('');
   const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
   const [newParticipant, setNewParticipant] = useState({
     name: '',
@@ -31,57 +32,55 @@ const WorkshopDetail: React.FC = () => {
     role: 'participant',
   });
   
-  useAuth();
+  const { user } = useAuth();
   
   useEffect(() => {
-    const mockWorkshop: Workshop = {
-      id: id || '1',
-      name: 'SDLC Improvement Workshop',
-      description: 'Identifying pain points in our software development lifecycle',
-      facilitator: 'John Doe',
-      status: 'active',
-      createdAt: '2025-05-10T10:00:00Z',
+    const fetchWorkshopData = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        
+        const workshopData = await workshopsAPI.getById(id);
+        setWorkshop(workshopData);
+        
+        const participantsData = await participantsAPI.getByWorkshop(id);
+        setParticipants(participantsData);
+        
+        setError('');
+      } catch (error) {
+        console.error('Error fetching workshop data:', error);
+        setError('Failed to load workshop data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    const mockParticipants: Participant[] = [
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'facilitator',
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        role: 'participant',
-      },
-      {
-        id: '3',
-        name: 'Bob Johnson',
-        email: 'bob@example.com',
-        role: 'participant',
-      },
-    ];
-    
-    setWorkshop(mockWorkshop);
-    setParticipants(mockParticipants);
-    setIsLoading(false);
+    fetchWorkshopData();
   }, [id]);
   
-  const handleAddParticipant = (e: React.FormEvent) => {
+  const handleAddParticipant = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newParticipantData: Participant = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: newParticipant.name,
-      email: newParticipant.email,
-      role: newParticipant.role,
-    };
+    if (!id || !workshop) return;
     
-    setParticipants([...participants, newParticipantData]);
-    setShowAddParticipantModal(false);
-    setNewParticipant({ name: '', email: '', role: 'participant' });
+    try {
+      const participantData = {
+        userId: user?.id || '',
+        name: newParticipant.name,
+        email: newParticipant.email,
+        role: newParticipant.role,
+      };
+      
+      const addedParticipant = await participantsAPI.add(id, participantData);
+      setParticipants([...participants, addedParticipant]);
+      setShowAddParticipantModal(false);
+      setNewParticipant({ name: '', email: '', role: 'participant' });
+      setError('');
+    } catch (error) {
+      console.error('Error adding participant:', error);
+      setError('Failed to add participant. Please try again.');
+    }
   };
   
   if (isLoading) {

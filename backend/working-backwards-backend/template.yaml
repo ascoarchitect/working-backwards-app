@@ -16,6 +16,8 @@ Globals:
         PAIN_POINTS_TABLE: !Ref PainPointsTable
         USE_CASES_TABLE: !Ref UseCasesTable
         ACTION_PLANS_TABLE: !Ref ActionPlansTable
+        USER_TABLE: !Ref UserTable
+        JWT_SECRET: ${JWT_SECRET}
         CORS_ORIGIN: '*'  # Update with specific domain in production
 
 Resources:
@@ -120,6 +122,27 @@ Resources:
         - IndexName: UseCaseIndex
           KeySchema:
             - AttributeName: useCaseId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+            
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UserTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
               KeyType: HASH
           Projection:
             ProjectionType: ALL
@@ -363,6 +386,8 @@ Resources:
         - x86_64
       Policies:
         - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+        - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantsTable
       Events:
         Login:
@@ -377,6 +402,12 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /auth/register
             Method: post
+        GetCurrentUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /auth/me
+            Method: get
 
 Outputs:
   ApiEndpoint:

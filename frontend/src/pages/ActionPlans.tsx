@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { actionPlansAPI, useCasesAPI } from '../services/api';
 
 interface UseCase {
   id: string;
@@ -55,151 +56,130 @@ const ActionPlans: React.FC = () => {
   useAuth();
   
   useEffect(() => {
-    const mockUseCases: UseCase[] = [
-      {
-        id: '1',
-        title: 'Automated Deployment Pipeline',
-        totalScore: 12,
-      },
-      {
-        id: '2',
-        title: 'Automated Testing Framework',
-        totalScore: 9,
-      },
-    ];
+    const fetchData = async () => {
+      if (!workshopId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        const useCasesData = await useCasesAPI.getByWorkshop(workshopId);
+        setUseCases(useCasesData);
+        
+        const actionPlansData = await actionPlansAPI.getByWorkshop(workshopId);
+        setActionPlans(actionPlansData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    const mockActionPlans: ActionPlan[] = [
-      {
-        id: '1',
-        useCaseId: '1',
-        title: 'Implement CI/CD Pipeline',
-        description: 'Set up a fully automated CI/CD pipeline with testing and approval gates',
-        owner: 'John Doe',
-        startDate: '2025-06-01',
-        endDate: '2025-07-15',
-        status: 'not_started',
-        tasks: [
-          {
-            id: '1-1',
-            description: 'Research CI/CD tools',
-            owner: 'Jane Smith',
-            dueDate: '2025-06-10',
-            status: 'not_started',
-          },
-          {
-            id: '1-2',
-            description: 'Set up build automation',
-            owner: 'John Doe',
-            dueDate: '2025-06-20',
-            status: 'not_started',
-          },
-          {
-            id: '1-3',
-            description: 'Configure deployment pipelines',
-            owner: 'Bob Johnson',
-            dueDate: '2025-07-05',
-            status: 'not_started',
-          },
-        ],
-        createdAt: '2025-05-15T10:00:00Z',
-      },
-    ];
-    
-    setUseCases(mockUseCases);
-    setActionPlans(mockActionPlans);
-    setIsLoading(false);
+    fetchData();
   }, [workshopId]);
   
-  const handleAddActionPlan = (e: React.FormEvent) => {
+  const handleAddActionPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newActionPlanData: ActionPlan = {
-      id: Math.random().toString(36).substring(2, 9),
-      useCaseId: newActionPlan.useCaseId,
-      title: newActionPlan.title,
-      description: newActionPlan.description,
-      owner: newActionPlan.owner,
-      startDate: newActionPlan.startDate,
-      endDate: newActionPlan.endDate,
-      status: 'not_started',
-      tasks: [],
-      createdAt: new Date().toISOString(),
-    };
+    if (!workshopId) return;
     
-    setActionPlans([...actionPlans, newActionPlanData]);
-    setShowAddModal(false);
-    setNewActionPlan({
-      useCaseId: '',
-      title: '',
-      description: '',
-      owner: '',
-      startDate: '',
-      endDate: '',
-    });
+    try {
+      const actionPlanData = {
+        useCaseId: newActionPlan.useCaseId,
+        title: newActionPlan.title,
+        description: newActionPlan.description,
+        owner: newActionPlan.owner,
+        startDate: newActionPlan.startDate,
+        endDate: newActionPlan.endDate,
+        tasks: []
+      };
+      
+      await actionPlansAPI.create(workshopId, newActionPlan.useCaseId, actionPlanData);
+      
+      const actionPlansData = await actionPlansAPI.getByWorkshop(workshopId);
+      setActionPlans(actionPlansData);
+      
+      setShowAddModal(false);
+      setNewActionPlan({
+        useCaseId: '',
+        title: '',
+        description: '',
+        owner: '',
+        startDate: '',
+        endDate: '',
+      });
+    } catch (error) {
+      console.error('Error adding action plan:', error);
+    }
   };
   
-  const handleAddTask = (e: React.FormEvent) => {
+  const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedActionPlan) return;
+    if (!selectedActionPlan || !workshopId) return;
     
-    const newTaskData: ActionTask = {
-      id: `${selectedActionPlan.id}-${Math.random().toString(36).substring(2, 9)}`,
-      description: newTask.description,
-      owner: newTask.owner,
-      dueDate: newTask.dueDate,
-      status: 'not_started',
-    };
-    
-    const updatedActionPlans = actionPlans.map(plan => {
-      if (plan.id === selectedActionPlan.id) {
-        return {
-          ...plan,
-          tasks: [...plan.tasks, newTaskData],
-        };
-      }
-      return plan;
-    });
-    
-    setActionPlans(updatedActionPlans);
-    setShowAddTaskModal(false);
-    setNewTask({
-      description: '',
-      owner: '',
-      dueDate: '',
-    });
+    try {
+      const newTaskData = {
+        description: newTask.description,
+        owner: newTask.owner,
+        dueDate: newTask.dueDate,
+        status: 'not_started',
+      };
+      
+      const actionPlan = await actionPlansAPI.getById(workshopId, selectedActionPlan.id);
+      
+      const updatedTasks = [...(actionPlan.tasks || []), newTaskData];
+      
+      await actionPlansAPI.update(workshopId, selectedActionPlan.id, {
+        tasks: updatedTasks
+      });
+      
+      const actionPlansData = await actionPlansAPI.getByWorkshop(workshopId);
+      setActionPlans(actionPlansData);
+      
+      setShowAddTaskModal(false);
+      setNewTask({
+        description: '',
+        owner: '',
+        dueDate: '',
+      });
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
   
-  const updateTaskStatus = (planId: string, taskId: string, status: 'not_started' | 'in_progress' | 'completed') => {
-    const updatedActionPlans = actionPlans.map(plan => {
-      if (plan.id === planId) {
-        const updatedTasks = plan.tasks.map(task => {
-          if (task.id === taskId) {
-            return { ...task, status };
-          }
-          return task;
-        });
-        
-        let planStatus: 'not_started' | 'in_progress' | 'completed' = 'not_started';
-        const completedCount = updatedTasks.filter(t => t.status === 'completed').length;
-        const inProgressCount = updatedTasks.filter(t => t.status === 'in_progress').length;
-        
-        if (completedCount === updatedTasks.length) {
-          planStatus = 'completed';
-        } else if (inProgressCount > 0 || completedCount > 0) {
-          planStatus = 'in_progress';
+  const updateTaskStatus = async (planId: string, taskId: string, status: 'not_started' | 'in_progress' | 'completed') => {
+    if (!workshopId) return;
+    
+    try {
+      const actionPlan = await actionPlansAPI.getById(workshopId, planId);
+      
+      const updatedTasks = actionPlan.tasks.map((task: ActionTask) => {
+        if (task.id === taskId) {
+          return { ...task, status };
         }
-        
-        return {
-          ...plan,
-          tasks: updatedTasks,
-          status: planStatus,
-        };
+        return task;
+      });
+      
+      let planStatus: 'not_started' | 'in_progress' | 'completed' = 'not_started';
+      const completedCount = updatedTasks.filter((t: ActionTask) => t.status === 'completed').length;
+      const inProgressCount = updatedTasks.filter((t: ActionTask) => t.status === 'in_progress').length;
+      
+      if (completedCount === updatedTasks.length) {
+        planStatus = 'completed';
+      } else if (inProgressCount > 0 || completedCount > 0) {
+        planStatus = 'in_progress';
       }
-      return plan;
-    });
-    
-    setActionPlans(updatedActionPlans);
+      
+      await actionPlansAPI.update(workshopId, planId, {
+        tasks: updatedTasks,
+        status: planStatus
+      });
+      
+      const actionPlansData = await actionPlansAPI.getByWorkshop(workshopId);
+      setActionPlans(actionPlansData);
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
   };
   
   const getStatusBadgeClass = (status: string) => {

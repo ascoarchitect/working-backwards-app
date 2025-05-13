@@ -1,4 +1,5 @@
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
+import { authAPI } from '../services/api';
 
 interface User {
   id: string;
@@ -23,36 +24,56 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.token) {
+            try {
+              const response = await authAPI.getCurrentUser();
+              setUser(response.user);
+            } catch (error) {
+              console.error('Error loading user:', error);
+              localStorage.removeItem('user');
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          localStorage.removeItem('user');
+        }
+      }
+      setLoading(false);
+    };
+
+    loadUser();
+  }, []);
 
   const login = async (email: string, password: string) => {
-    console.log(`Attempting login with email: ${email} and password length: ${password.length}`);
     try {
-      const mockUser: User = {
-        id: '1',
-        name: 'Test User',
-        email,
-        role: 'facilitator',
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      const response = await authAPI.login(email, password);
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify({
+        token: response.token,
+        user: response.user
+      }));
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
     }
   };
 
-  const register = async (name: string, email: string, _password: string, role: 'participant' | 'facilitator') => {
+  const register = async (name: string, email: string, password: string, role: 'participant' | 'facilitator') => {
     try {
-      const mockUser: User = {
-        id: '1',
-        name,
-        email,
-        role,
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      const response = await authAPI.register(name, email, password, role);
+      setUser(response.user);
+      localStorage.setItem('user', JSON.stringify({
+        token: response.token,
+        user: response.user
+      }));
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
@@ -63,6 +84,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(null);
     localStorage.removeItem('user');
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
