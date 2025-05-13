@@ -161,7 +161,7 @@ app.use('/', createProxyMiddleware({
   pathRewrite: {
     '^/': '/'
   },
-  onProxyReq: (proxyReq, req, res) => {
+  onProxyReq: (proxyReq) => {
     proxyReq.setHeader('Content-Type', 'application/json');
   }
 }));
