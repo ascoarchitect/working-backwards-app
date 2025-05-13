@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { workshopsAPI } from '../services/api';
 
 interface Workshop {
   id: string;
@@ -14,7 +15,7 @@ interface Workshop {
 const Dashboard: React.FC = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error] = useState('');
+  const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWorkshop, setNewWorkshop] = useState({
     name: '',
@@ -25,27 +26,21 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const mockWorkshops: Workshop[] = [
-      {
-        id: '1',
-        name: 'SDLC Improvement Workshop',
-        description: 'Identifying pain points in our software development lifecycle',
-        facilitator: 'John Doe',
-        status: 'active',
-        createdAt: '2025-05-10T10:00:00Z',
-      },
-      {
-        id: '2',
-        name: 'DevOps Transformation',
-        description: 'Working backwards from ideal DevOps practices',
-        facilitator: 'Jane Smith',
-        status: 'active',
-        createdAt: '2025-05-08T14:30:00Z',
-      },
-    ];
+    const fetchWorkshops = async () => {
+      try {
+        setIsLoading(true);
+        const data = await workshopsAPI.getAll();
+        setWorkshops(data);
+        setError('');
+      } catch (error) {
+        console.error('Error fetching workshops:', error);
+        setError('Failed to load workshops. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    setWorkshops(mockWorkshops);
-    setIsLoading(false);
+    fetchWorkshops();
   }, []);
   
   const handleLogout = () => {
@@ -53,21 +48,25 @@ const Dashboard: React.FC = () => {
     navigate('/login');
   };
   
-  const handleCreateWorkshop = (e: React.FormEvent) => {
+  const handleCreateWorkshop = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newWorkshopData: Workshop = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: newWorkshop.name,
-      description: newWorkshop.description,
-      facilitator: user?.name || 'Unknown',
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    };
-    
-    setWorkshops([...workshops, newWorkshopData]);
-    setShowCreateModal(false);
-    setNewWorkshop({ name: '', description: '' });
+    try {
+      const workshopData = {
+        name: newWorkshop.name,
+        description: newWorkshop.description,
+        facilitator: user?.name || 'Unknown',
+      };
+      
+      const createdWorkshop = await workshopsAPI.create(workshopData);
+      setWorkshops([...workshops, createdWorkshop]);
+      setShowCreateModal(false);
+      setNewWorkshop({ name: '', description: '' });
+      setError('');
+    } catch (error) {
+      console.error('Error creating workshop:', error);
+      setError('Failed to create workshop. Please try again.');
+    }
   };
   
   if (isLoading) {
