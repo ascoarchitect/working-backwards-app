@@ -231,7 +231,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref WorkshopsTable
@@ -270,7 +270,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantsTable
@@ -295,7 +295,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PainPointsTable
@@ -328,7 +328,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UseCasesTable
@@ -365,7 +365,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ActionPlansTable
@@ -396,7 +396,7 @@ Resources:
       Handler: app.handler
       Runtime: nodejs22.x
       Architectures:
-        - x86_64
+        - arm64
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UserTable
