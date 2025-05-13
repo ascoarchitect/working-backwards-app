@@ -98,12 +98,20 @@ const Dashboard: React.FC = () => {
         <div className="px-4 py-6 sm:px-0">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold text-gray-900">Your Workshops</h2>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Create New Workshop
-            </button>
+            <div className="flex space-x-4">
+              <Link
+                to="/printable-forms"
+                className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Printable Forms
+              </Link>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                Create New Workshop
+              </button>
+            </div>
           </div>
           
           {error && (
