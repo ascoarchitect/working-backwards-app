@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useCasesAPI, painPointsAPI } from '../services/api';
 
 interface UseCase {
   id: string;
@@ -47,115 +48,93 @@ const UseCases: React.FC = () => {
   useAuth();
   
   useEffect(() => {
-    const mockUseCases: UseCase[] = [
-      {
-        id: '1',
-        workshopId: workshopId || '',
-        title: 'Automated Deployment Pipeline',
-        problemStatement: 'Manual deployments are error-prone and time-consuming',
-        currentProcess: 'Engineers manually deploy code to production environments',
-        desiredOutcome: 'Fully automated CI/CD pipeline with testing and approval gates',
-        businessImpact: 5,
-        feasibility: 4,
-        timeToValue: 3,
-        totalScore: 12,
-        createdAt: '2025-05-10T12:00:00Z',
-        updatedAt: '2025-05-10T12:00:00Z',
-      },
-      {
-        id: '2',
-        workshopId: workshopId || '',
-        title: 'Automated Testing Framework',
-        problemStatement: 'Lack of automated testing leads to quality issues',
-        currentProcess: 'Manual testing with inconsistent coverage',
-        desiredOutcome: 'Comprehensive automated test suite with high coverage',
-        businessImpact: 4,
-        feasibility: 3,
-        timeToValue: 2,
-        totalScore: 9,
-        createdAt: '2025-05-10T12:30:00Z',
-        updatedAt: '2025-05-10T12:30:00Z',
-      },
-    ];
-    
-    const mockPainPoints: ConsolidatedPainPoint[] = [
-      {
-        id: 'c1',
-        description: 'Deployment and CI/CD pipeline issues',
-      },
-      {
-        id: 'c2',
-        description: 'Lack of automated testing leads to quality issues',
-      },
-      {
-        id: 'c3',
-        description: 'Poor documentation makes onboarding difficult',
-      },
-    ];
-    
-    setUseCases(mockUseCases);
-    setPainPoints(mockPainPoints);
-    setIsLoading(false);
-  }, [workshopId]);
-  
-  const handleAddUseCase = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newUseCaseData: UseCase = {
-      id: Math.random().toString(36).substring(2, 9),
-      workshopId: workshopId || '',
-      title: newUseCase.title,
-      problemStatement: newUseCase.problemStatement,
-      currentProcess: newUseCase.currentProcess,
-      desiredOutcome: newUseCase.desiredOutcome,
-      businessImpact: 0,
-      feasibility: 0,
-      timeToValue: 0,
-      totalScore: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const fetchData = async () => {
+      if (!workshopId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        const useCasesData = await useCasesAPI.getByWorkshop(workshopId);
+        setUseCases(useCasesData);
+        
+        const painPointsData = await painPointsAPI.getByWorkshop(workshopId);
+        const consolidatedPainPoints = painPointsData
+          .filter((p: any) => p.category === 'consolidated' || p.isConsolidated)
+          .map((p: any) => ({
+            id: p.id,
+            description: p.description
+          }));
+        
+        setPainPoints(consolidatedPainPoints);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    setUseCases([...useCases, newUseCaseData]);
-    setShowAddModal(false);
-    setNewUseCase({
-      title: '',
-      problemStatement: '',
-      currentProcess: '',
-      desiredOutcome: '',
-      relatedPainPoints: [],
-    });
-  };
+    fetchData();
+  }, [workshopId]);
   
-  const handleScoreUseCase = (e: React.FormEvent) => {
+  const handleAddUseCase = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedUseCase) return;
+    if (!workshopId) return;
     
-    const totalScore = scores.businessImpact + scores.feasibility + scores.timeToValue;
+    try {
+      const useCaseData = {
+        title: newUseCase.title,
+        problemStatement: newUseCase.problemStatement,
+        currentProcess: newUseCase.currentProcess,
+        desiredOutcome: newUseCase.desiredOutcome,
+        metrics: '', // Required by API but not in the form
+        painPoints: newUseCase.relatedPainPoints
+      };
+      
+      await useCasesAPI.create(workshopId, useCaseData);
+      
+      const useCasesData = await useCasesAPI.getByWorkshop(workshopId);
+      setUseCases(useCasesData);
+      
+      setShowAddModal(false);
+      setNewUseCase({
+        title: '',
+        problemStatement: '',
+        currentProcess: '',
+        desiredOutcome: '',
+        relatedPainPoints: [],
+      });
+    } catch (error) {
+      console.error('Error adding use case:', error);
+    }
+  };
+  
+  const handleScoreUseCase = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const updatedUseCases = useCases.map(uc => {
-      if (uc.id === selectedUseCase.id) {
-        return {
-          ...uc,
-          businessImpact: scores.businessImpact,
-          feasibility: scores.feasibility,
-          timeToValue: scores.timeToValue,
-          totalScore,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      return uc;
-    });
+    if (!selectedUseCase || !workshopId) return;
     
-    setUseCases(updatedUseCases);
-    setShowScoreModal(false);
-    setSelectedUseCase(null);
-    setScores({
-      businessImpact: 3,
-      feasibility: 3,
-      timeToValue: 3,
-    });
+    try {
+      // API expects implementationFeasibility instead of feasibility
+      await useCasesAPI.score(workshopId, selectedUseCase.id, {
+        businessImpact: scores.businessImpact,
+        implementationFeasibility: scores.feasibility,
+        timeToValue: scores.timeToValue
+      });
+      
+      const useCasesData = await useCasesAPI.getByWorkshop(workshopId);
+      setUseCases(useCasesData);
+      
+      setShowScoreModal(false);
+      setSelectedUseCase(null);
+      setScores({
+        businessImpact: 3,
+        feasibility: 3,
+        timeToValue: 3,
+      });
+    } catch (error) {
+      console.error('Error scoring use case:', error);
+    }
   };
   
   const openScoreModal = (useCase: UseCase) => {

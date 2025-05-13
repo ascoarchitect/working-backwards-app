@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { painPointsAPI } from '../services/api';
 
 interface PainPoint {
   id: string;
@@ -43,114 +44,104 @@ const PainPoints: React.FC = () => {
   const { user } = useAuth();
   
   useEffect(() => {
-    const mockPainPoints: PainPoint[] = [
-      {
-        id: '1',
-        workshopId: workshopId || '',
-        participantId: '1',
-        participantName: 'John Doe',
-        description: 'Manual deployment process is error-prone and time-consuming',
-        category: 'process',
-        impact: 'high',
-        isConsolidated: false,
-        createdAt: '2025-05-10T10:00:00Z',
-      },
-      {
-        id: '2',
-        workshopId: workshopId || '',
-        participantId: '2',
-        participantName: 'Jane Smith',
-        description: 'Lack of automated testing leads to quality issues',
-        category: 'testing',
-        impact: 'high',
-        isConsolidated: false,
-        createdAt: '2025-05-10T10:05:00Z',
-      },
-      {
-        id: '3',
-        workshopId: workshopId || '',
-        participantId: '3',
-        participantName: 'Bob Johnson',
-        description: 'Poor documentation makes onboarding difficult',
-        category: 'documentation',
-        impact: 'medium',
-        isConsolidated: false,
-        createdAt: '2025-05-10T10:10:00Z',
-      },
-    ];
-    
-    const mockConsolidatedPainPoints: ConsolidatedPainPoint[] = [
-      {
-        id: 'c1',
-        workshopId: workshopId || '',
-        description: 'Deployment and CI/CD pipeline issues',
-        category: 'process',
-        impact: 'high',
-        sourceIds: ['1'],
-        createdAt: '2025-05-10T11:00:00Z',
-      },
-    ];
-    
-    setPainPoints(mockPainPoints);
-    setConsolidatedPainPoints(mockConsolidatedPainPoints);
-    setIsLoading(false);
-  }, [workshopId]);
-  
-  const handleAddPainPoint = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newPainPointData: PainPoint = {
-      id: Math.random().toString(36).substring(2, 9),
-      workshopId: workshopId || '',
-      participantId: user?.id || '',
-      participantName: user?.name || 'Unknown',
-      description: newPainPoint.description,
-      category: newPainPoint.category,
-      impact: newPainPoint.impact,
-      isConsolidated: false,
-      createdAt: new Date().toISOString(),
+    const fetchPainPoints = async () => {
+      if (!workshopId) return;
+      
+      try {
+        setIsLoading(true);
+        const data = await painPointsAPI.getByWorkshop(workshopId);
+        
+        // Separate regular and consolidated pain points
+        const regular = data.filter((p: PainPoint) => !p.isConsolidated);
+        const consolidated = data.filter((p: ConsolidatedPainPoint) => p.sourceIds && p.sourceIds.length > 0);
+        
+        setPainPoints(regular);
+        setConsolidatedPainPoints(consolidated);
+        setError('');
+      } catch (error) {
+        console.error('Error fetching pain points:', error);
+        setError('Failed to load pain points. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    setPainPoints([...painPoints, newPainPointData]);
-    setShowAddModal(false);
-    setNewPainPoint({
-      description: '',
-      category: 'process',
-      impact: 'medium',
-    });
-  };
+    fetchPainPoints();
+  }, [workshopId]);
   
-  const handleConsolidatePainPoints = (e: React.FormEvent) => {
+  const handleAddPainPoint = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (selectedPainPoints.length === 0) {
+    if (!workshopId) return;
+    
+    try {
+      const painPointData = {
+        title: newPainPoint.category,
+        description: newPainPoint.description,
+        submittedBy: user?.name || 'Unknown',
+        category: newPainPoint.category,
+        impact: newPainPoint.impact
+      };
+      
+      await painPointsAPI.add(workshopId, painPointData);
+      
+      const data = await painPointsAPI.getByWorkshop(workshopId);
+      const regular = data.filter((p: PainPoint) => !p.isConsolidated);
+      setPainPoints(regular);
+      
+      setShowAddModal(false);
+      setNewPainPoint({
+        description: '',
+        category: 'process',
+        impact: 'medium',
+      });
+      setError('');
+    } catch (error) {
+      console.error('Error adding pain point:', error);
+      setError('Failed to add pain point. Please try again.');
+    }
+  };
+  
+  const handleConsolidatePainPoints = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!workshopId || selectedPainPoints.length === 0) {
       setError('Please select at least one pain point to consolidate');
       return;
     }
     
-    const newConsolidatedPainPoint: ConsolidatedPainPoint = {
-      id: `c${Math.random().toString(36).substring(2, 9)}`,
-      workshopId: workshopId || '',
-      description: consolidationDescription,
-      category: painPoints.find(p => p.id === selectedPainPoints[0])?.category || 'process',
-      impact: 'high',
-      sourceIds: selectedPainPoints,
-      createdAt: new Date().toISOString(),
-    };
-    
-    setConsolidatedPainPoints([...consolidatedPainPoints, newConsolidatedPainPoint]);
-    
-    const updatedPainPoints = painPoints.map(p => {
-      if (selectedPainPoints.includes(p.id)) {
-        return { ...p, isConsolidated: true };
+    try {
+      const consolidatedData = {
+        title: 'Consolidated',
+        description: consolidationDescription,
+        submittedBy: user?.name || 'Unknown',
+        category: painPoints.find(p => p.id === selectedPainPoints[0])?.category || 'process',
+        impact: 'high',
+        sourceIds: selectedPainPoints,
+        isConsolidated: true
+      };
+      
+      await painPointsAPI.add(workshopId, consolidatedData);
+      
+      for (const id of selectedPainPoints) {
+        await painPointsAPI.update(workshopId, id, { category: 'consolidated' });
       }
-      return p;
-    });
-    
-    setPainPoints(updatedPainPoints);
-    setShowConsolidateModal(false);
-    setSelectedPainPoints([]);
-    setConsolidationDescription('');
+      
+      const data = await painPointsAPI.getByWorkshop(workshopId);
+      const regular = data.filter((p: PainPoint) => !p.isConsolidated);
+      const consolidated = data.filter((p: ConsolidatedPainPoint) => p.sourceIds && p.sourceIds.length > 0);
+      
+      setPainPoints(regular);
+      setConsolidatedPainPoints(consolidated);
+      
+      setShowConsolidateModal(false);
+      setSelectedPainPoints([]);
+      setConsolidationDescription('');
+      setError('');
+    } catch (error) {
+      console.error('Error consolidating pain points:', error);
+      setError('Failed to consolidate pain points. Please try again.');
+    }
   };
   
   const togglePainPointSelection = (id: string) => {
