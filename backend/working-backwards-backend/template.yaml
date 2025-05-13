@@ -74,14 +74,7 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        - IndexName: WorkshopEmailIndex
-          KeySchema:
-            - AttributeName: workshopId
-              KeyType: HASH
-            - AttributeName: email
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
+
 
   PainPointsTable:
     Type: AWS::DynamoDB::Table
@@ -238,7 +231,7 @@ Resources:
     Properties:
       CodeUri: functions/workshops/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -277,7 +270,7 @@ Resources:
     Properties:
       CodeUri: functions/participants/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -302,7 +295,7 @@ Resources:
     Properties:
       CodeUri: functions/painpoints/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -333,7 +326,7 @@ Resources:
     Properties:
       CodeUri: functions/usecases/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -370,7 +363,7 @@ Resources:
     Properties:
       CodeUri: functions/actionplans/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -401,7 +394,7 @@ Resources:
     Properties:
       CodeUri: functions/auth/
       Handler: app.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
