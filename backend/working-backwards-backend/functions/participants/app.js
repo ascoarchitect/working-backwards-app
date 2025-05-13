@@ -205,9 +205,9 @@ exports.handler = async (event) => {
   const path = event.path;
   const method = event.httpMethod;
 
-  if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/participants$/) && method === 'GET') {
+  if (path.match(/^\/workshop-participants\/[a-zA-Z0-9-]+$/) && method === 'GET') {
     return getParticipants(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/participants$/) && method === 'POST') {
+  } else if (path.match(/^\/workshop-participants\/[a-zA-Z0-9-]+$/) && method === 'POST') {
     return addParticipant(event);
   } else {
     return {
