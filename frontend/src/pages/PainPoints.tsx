@@ -21,7 +21,8 @@ interface ConsolidatedPainPoint {
   description: string;
   category: string;
   impact: 'low' | 'medium' | 'high';
-  sourceIds: string[];
+  sourceIds?: string[];
+  parentIds?: string[];
   createdAt: string;
 }
 
@@ -53,7 +54,9 @@ const PainPoints: React.FC = () => {
         
         // Separate regular and consolidated pain points
         const regular = data.filter((p: PainPoint) => !p.isConsolidated);
-        const consolidated = data.filter((p: ConsolidatedPainPoint) => p.sourceIds && p.sourceIds.length > 0);
+        const consolidated = data.filter((p: ConsolidatedPainPoint) => 
+          (p.sourceIds && p.sourceIds.length > 0) || (p.parentIds && p.parentIds.length > 0)
+        );
         
         setPainPoints(regular);
         setConsolidatedPainPoints(consolidated);
@@ -287,7 +290,7 @@ const PainPoints: React.FC = () => {
                             Consolidated on {new Date(painPoint.createdAt).toLocaleString()}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Sources: {painPoint.sourceIds.length} pain points
+                            Sources: {(painPoint.sourceIds?.length || painPoint.parentIds?.length || 0)} pain points
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
