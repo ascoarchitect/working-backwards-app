@@ -61,6 +61,8 @@ Resources:
           AttributeType: S
         - AttributeName: userId
           AttributeType: S
+        - AttributeName: email
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -76,6 +78,14 @@ Resources:
             - AttributeName: workshopId
               KeyType: HASH
             - AttributeName: userId
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: WorkshopEmailIndex
+          KeySchema:
+            - AttributeName: workshopId
+              KeyType: HASH
+            - AttributeName: email
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { workshopsAPI, participantsAPI } from '../services/api';
+import { workshopsAPI, participantsAPI, authAPI } from '../services/api';
 
 interface Workshop {
   id: string;
@@ -19,6 +18,13 @@ interface Participant {
   role: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 const WorkshopDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [workshop, setWorkshop] = useState<Workshop | null>(null);
@@ -27,12 +33,11 @@ const WorkshopDetail: React.FC = () => {
   const [error, setError] = useState('');
   const [showAddParticipantModal, setShowAddParticipantModal] = useState(false);
   const [newParticipant, setNewParticipant] = useState({
-    name: '',
-    email: '',
+    userId: '',
     role: 'participant',
   });
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   
-  const { user } = useAuth();
   
   useEffect(() => {
     const fetchWorkshopData = async () => {
@@ -46,6 +51,9 @@ const WorkshopDetail: React.FC = () => {
         
         const participantsData = await participantsAPI.getByWorkshop(id);
         setParticipants(participantsData);
+        
+        const usersData = await authAPI.getAllUsers();
+        setAllUsers(usersData.users || []);
         
         setError('');
       } catch (error) {
@@ -65,17 +73,24 @@ const WorkshopDetail: React.FC = () => {
     if (!id || !workshop) return;
     
     try {
+      const selectedUser = allUsers.find(u => u.id === newParticipant.userId);
+      
+      if (!selectedUser) {
+        setError('Please select a user');
+        return;
+      }
+      
       const participantData = {
-        userId: user?.id || '',
-        name: newParticipant.name,
-        email: newParticipant.email,
+        userId: selectedUser.id,
+        name: selectedUser.name,
+        email: selectedUser.email,
         role: newParticipant.role,
       };
       
       const addedParticipant = await participantsAPI.add(id, participantData);
       setParticipants([...participants, addedParticipant]);
       setShowAddParticipantModal(false);
-      setNewParticipant({ name: '', email: '', role: 'participant' });
+      setNewParticipant({ userId: '', role: 'participant' });
       setError('');
     } catch (error) {
       console.error('Error adding participant:', error);
@@ -274,32 +289,24 @@ const WorkshopDetail: React.FC = () => {
                       </h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Name
+                          <label htmlFor="userId" className="block text-sm font-medium text-gray-700">
+                            User
                           </label>
-                          <input
-                            type="text"
-                            name="name"
-                            id="name"
+                          <select
+                            id="userId"
+                            name="userId"
                             required
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value={newParticipant.name}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, name: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            name="email"
-                            id="email"
-                            required
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value={newParticipant.email}
-                            onChange={(e) => setNewParticipant({ ...newParticipant, email: e.target.value })}
-                          />
+                            value={newParticipant.userId}
+                            onChange={(e) => setNewParticipant({ ...newParticipant, userId: e.target.value })}
+                          >
+                            <option value="">Select a user</option>
+                            {allUsers.map((user) => (
+                              <option key={user.id} value={user.id}>
+                                {user.name} ({user.email})
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <label htmlFor="role" className="block text-sm font-medium text-gray-700">
