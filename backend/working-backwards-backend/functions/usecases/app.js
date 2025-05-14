@@ -329,10 +329,10 @@ const scoreSingleUseCase = async (event) => {
       Key: {
         id
       },
-      UpdateExpression: 'SET businessImpact = :businessImpact, feasibility = :implementationFeasibility, timeToValue = :timeToValue, totalScore = :totalScore, isScored = :isScored, updatedAt = :updatedAt',
+      UpdateExpression: 'SET businessImpact = :businessImpact, feasibility = :feasibility, timeToValue = :timeToValue, totalScore = :totalScore, isScored = :isScored, updatedAt = :updatedAt',
       ExpressionAttributeValues: {
         ':businessImpact': businessImpact || 0,
-        ':implementationFeasibility': implementationFeasibility || 0,
+        ':feasibility': implementationFeasibility || 0,
         ':timeToValue': timeToValue || 0,
         ':totalScore': totalScore,
         ':isScored': true,
