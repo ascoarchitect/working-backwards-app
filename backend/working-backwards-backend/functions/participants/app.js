@@ -1,11 +1,9 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const participantTable = process.env.PARTICIPANTS_TABLE;
 const workshopTable = process.env.WORKSHOPS_TABLE;
-const jwtSecret = process.env.JWT_SECRET;
 
 const getParticipants = async (event) => {
   try {

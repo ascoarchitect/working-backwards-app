@@ -1,11 +1,8 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const painPointTable = process.env.PAIN_POINTS_TABLE;
-const participantTable = process.env.PARTICIPANTS_TABLE;
-const jwtSecret = process.env.JWT_SECRET;
 
 const getPainPoints = async (event) => {
   try {

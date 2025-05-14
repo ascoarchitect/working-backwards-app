@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
@@ -168,10 +167,10 @@ const getCurrentUser = async (event) => {
     if (!userId) {
       const allUsers = await dynamoDB.scan({
         TableName: userTable,
-        ProjectionExpression: "id, #name, email, #role",
+        ProjectionExpression: 'id, #name, email, #role',
         ExpressionAttributeNames: {
-          "#name": "name",
-          "#role": "role"
+          '#name': 'name',
+          '#role': 'role'
         }
       }).promise();
       

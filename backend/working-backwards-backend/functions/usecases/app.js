@@ -1,11 +1,8 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken');
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const useCaseTable = process.env.USE_CASES_TABLE;
-const participantTable = process.env.PARTICIPANTS_TABLE;
-const jwtSecret = process.env.JWT_SECRET;
 
 const getUseCases = async (event) => {
   try {
@@ -112,7 +109,7 @@ const createUseCase = async (event) => {
 
 const updateUseCase = async (event) => {
   try {
-    const { workshopId, id } = event.pathParameters;
+    const { id } = event.pathParameters;
     const { 
       title, 
       problemStatement, 
@@ -226,7 +223,6 @@ const updateUseCase = async (event) => {
 
 const scoreUseCases = async (event) => {
   try {
-    const { workshopId } = event.pathParameters;
     const { scores, role } = JSON.parse(event.body);
     
     if (role && role !== 'facilitator') {
