@@ -296,6 +296,75 @@ const scoreUseCases = async (event) => {
   }
 };
 
+const scoreSingleUseCase = async (event) => {
+  try {
+    const { id } = event.pathParameters;
+    const { businessImpact, feasibility, timeToValue, role } = JSON.parse(event.body);
+    
+    if (role && role !== 'facilitator') {
+      return {
+        statusCode: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ message: 'Only facilitators can score use cases' })
+      };
+    }
+
+    const totalScore = (businessImpact || 0) + (feasibility || 0) + (timeToValue || 0);
+
+    await dynamoDB.update({
+      TableName: useCaseTable,
+      Key: {
+        id
+      },
+      UpdateExpression: 'SET businessImpact = :businessImpact, feasibility = :feasibility, timeToValue = :timeToValue, totalScore = :totalScore, isScored = :isScored, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':businessImpact': businessImpact || 0,
+        ':feasibility': feasibility || 0,
+        ':timeToValue': timeToValue || 0,
+        ':totalScore': totalScore,
+        ':isScored': true,
+        ':updatedAt': new Date().toISOString()
+      },
+      ReturnValues: 'ALL_NEW'
+    }).promise();
+
+    const updatedUseCaseResult = await dynamoDB.get({
+      TableName: useCaseTable,
+      Key: {
+        id
+      }
+    }).promise();
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({
+        message: 'Use case scored successfully',
+        useCase: updatedUseCaseResult.Item
+      })
+    };
+  } catch (error) {
+    console.error('Error scoring use case:', error);
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({ message: error.message || 'Error scoring use case' })
+    };
+  }
+};
+
 exports.handler = async (event) => {
   console.log('Event:', JSON.stringify(event));
 
@@ -328,6 +397,8 @@ exports.handler = async (event) => {
     return updateUseCase(event);
   } else if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+\/score$/) && method === 'POST') {
     return scoreUseCases(event);
+  } else if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+\/usecase\/[a-zA-Z0-9-]+\/score$/) && method === 'POST') {
+    return scoreSingleUseCase(event);
   } else {
     return {
       statusCode: 404,
