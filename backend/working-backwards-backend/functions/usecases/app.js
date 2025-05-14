@@ -298,32 +298,41 @@ const scoreUseCases = async (event) => {
 
 const scoreSingleUseCase = async (event) => {
   try {
-    const { id } = event.pathParameters;
-    const { businessImpact, feasibility, timeToValue, role } = JSON.parse(event.body);
+    const pathParams = event.pathParameters || {};
+    const id = pathParams.id || pathParams.useCaseId;
+    const workshopId = pathParams.workshopId;
+    const { businessImpact, implementationFeasibility, timeToValue } = JSON.parse(event.body);
     
-    if (role && role !== 'facilitator') {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'Only facilitators can score use cases' })
-      };
-    }
+    // if (role && role !== 'facilitator') {
+    //   return {
+    //     statusCode: 403,
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Access-Control-Allow-Origin': '*',
+    //       'Access-Control-Allow-Credentials': true
+    //     },
+    //     body: JSON.stringify({ message: 'Only facilitators can score use cases' })
+    //   };
+    // }
 
-    const totalScore = (businessImpact || 0) + (feasibility || 0) + (timeToValue || 0);
+    console.log('Scoring use case with ID:', id);
+    console.log('Request body:', JSON.stringify({
+      businessImpact,
+      implementationFeasibility,
+      timeToValue
+    }));
+
+    const totalScore = (businessImpact || 0) + (implementationFeasibility || 0) + (timeToValue || 0);
 
     await dynamoDB.update({
       TableName: useCaseTable,
       Key: {
         id
       },
-      UpdateExpression: 'SET businessImpact = :businessImpact, feasibility = :feasibility, timeToValue = :timeToValue, totalScore = :totalScore, isScored = :isScored, updatedAt = :updatedAt',
+      UpdateExpression: 'SET businessImpact = :businessImpact, feasibility = :implementationFeasibility, timeToValue = :timeToValue, totalScore = :totalScore, isScored = :isScored, updatedAt = :updatedAt',
       ExpressionAttributeValues: {
         ':businessImpact': businessImpact || 0,
-        ':feasibility': feasibility || 0,
+        ':implementationFeasibility': implementationFeasibility || 0,
         ':timeToValue': timeToValue || 0,
         ':totalScore': totalScore,
         ':isScored': true,
@@ -339,16 +348,28 @@ const scoreSingleUseCase = async (event) => {
       }
     }).promise();
 
+    const useCasesResult = await dynamoDB.query({
+      TableName: useCaseTable,
+      IndexName: 'WorkshopIndex',
+      KeyConditionExpression: 'workshopId = :workshopId',
+      ExpressionAttributeValues: {
+        ':workshopId': workshopId
+      }
+    }).promise();
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true
+        'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       },
       body: JSON.stringify({
         message: 'Use case scored successfully',
-        useCase: updatedUseCaseResult.Item
+        useCase: updatedUseCaseResult.Item,
+        useCases: useCasesResult.Items || []
       })
     };
   } catch (error) {
