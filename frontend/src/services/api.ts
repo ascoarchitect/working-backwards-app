@@ -99,6 +99,18 @@ export const painPointsAPI = {
     const response = await api.delete(`/workshop-painpoints/${workshopId}/painpoint/${painPointId}`);
     return response.data;
   },
+  consolidate: async (workshopId: string, data: { 
+    description: string; 
+    category?: string; 
+    impact?: string; 
+    painPointIds: string[]; 
+    createdBy?: string; 
+    createdByName?: string; 
+    role?: string 
+  }) => {
+    const response = await api.post(`/workshop-painpoints/${workshopId}/consolidate`, data);
+    return response.data.painPoint || {};
+  },
 };
 
 export const useCasesAPI = {
