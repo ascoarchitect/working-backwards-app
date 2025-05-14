@@ -6,6 +6,13 @@ Description: >
   SAM Template for Working Backwards Workshop Application
   
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Parameters:
+  JwtSecretParameter:
+    Type: String
+    NoEcho: true
+    Description: Secret for JWT token signing and verification
+    Default: "default-jwt-secret-replace-in-production"
+
 Globals:
   Function:
     Timeout: 30
@@ -17,7 +24,7 @@ Globals:
         USE_CASES_TABLE: !Ref UseCasesTable
         ACTION_PLANS_TABLE: !Ref ActionPlansTable
         USER_TABLE: !Ref UserTable
-        JWT_SECRET: ${JWT_SECRET}
+        JWT_SECRET: !Ref JwtSecretParameter
         CORS_ORIGIN: '*'  # Update with specific domain in production
 
 Resources:
@@ -274,6 +281,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WorkshopsTable
       Events:
         GetParticipants:
           Type: Api
@@ -301,6 +310,8 @@ Resources:
             TableName: !Ref PainPointsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WorkshopsTable
       Events:
         GetPainPoints:
           Type: Api
@@ -332,6 +343,10 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UseCasesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WorkshopsTable
       Events:
         GetUseCases:
           Type: Api
@@ -369,6 +384,10 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ActionPlansTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ParticipantsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WorkshopsTable
       Events:
         GetActionPlans:
           Type: Api

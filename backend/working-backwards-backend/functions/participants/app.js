@@ -105,7 +105,7 @@ const addParticipant = async (event) => {
       };
     }
 
-    if (workshopResult.Item.facilitatorId !== user.id) {
+    if (workshopResult.Item.facilitator !== user.id) {
       return {
         statusCode: 403,
         headers: {
