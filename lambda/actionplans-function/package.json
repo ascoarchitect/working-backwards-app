@@ -1,0 +1,12 @@
+{
+  "name": "actionplans-function",
+  "version": "1.0.0",
+  "description": "Action Plans Lambda function for Working Backwards app",
+  "main": "app.js",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "^3.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  }
+}
