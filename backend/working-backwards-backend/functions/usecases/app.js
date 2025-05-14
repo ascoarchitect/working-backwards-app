@@ -298,7 +298,7 @@ const scoreUseCases = async (event) => {
 
 const scoreSingleUseCase = async (event) => {
   try {
-    const { workshopId, id } = event.pathParameters;
+    const { id } = event.pathParameters;
     const { businessImpact, feasibility, timeToValue, role } = JSON.parse(event.body);
     
     if (role && role !== 'facilitator') {
