@@ -70,11 +70,11 @@ export const workshopsAPI = {
 export const participantsAPI = {
   getByWorkshop: async (workshopId: string) => {
     const response = await api.get(`/workshop-participants/${workshopId}`);
-    return response.data;
+    return response.data.participants || [];
   },
   add: async (workshopId: string, data: { userId: string; name: string; email: string }) => {
     const response = await api.post(`/workshop-participants/${workshopId}`, data);
-    return response.data;
+    return response.data.participant || {};
   },
   remove: async (workshopId: string, participantId: string) => {
     const response = await api.delete(`/workshop-participants/${workshopId}/participant/${participantId}`);
@@ -85,11 +85,11 @@ export const participantsAPI = {
 export const painPointsAPI = {
   getByWorkshop: async (workshopId: string) => {
     const response = await api.get(`/workshop-painpoints/${workshopId}`);
-    return response.data;
+    return response.data.painPoints || [];
   },
   add: async (workshopId: string, data: { title: string; description: string; submittedBy: string }) => {
     const response = await api.post(`/workshop-painpoints/${workshopId}`, data);
-    return response.data;
+    return response.data.painPoint || {};
   },
   update: async (workshopId: string, painPointId: string, data: { title?: string; description?: string; category?: string }) => {
     const response = await api.put(`/workshop-painpoints/${workshopId}/painpoint/${painPointId}`, data);
@@ -104,11 +104,11 @@ export const painPointsAPI = {
 export const useCasesAPI = {
   getByWorkshop: async (workshopId: string) => {
     const response = await api.get(`/workshop-usecases/${workshopId}`);
-    return response.data;
+    return response.data.useCases || [];
   },
   getById: async (workshopId: string, useCaseId: string) => {
     const response = await api.get(`/workshop-usecases/${workshopId}/usecase/${useCaseId}`);
-    return response.data;
+    return response.data.useCase || {};
   },
   create: async (workshopId: string, data: {
     title: string;
@@ -119,7 +119,7 @@ export const useCasesAPI = {
     painPoints: string[];
   }) => {
     const response = await api.post(`/workshop-usecases/${workshopId}`, data);
-    return response.data;
+    return response.data.useCase || {};
   },
   update: async (workshopId: string, useCaseId: string, data: {
     title?: string;
@@ -135,7 +135,7 @@ export const useCasesAPI = {
     };
   }) => {
     const response = await api.put(`/workshop-usecases/${workshopId}/usecase/${useCaseId}`, data);
-    return response.data;
+    return response.data.useCase || {};
   },
   score: async (workshopId: string, useCaseId: string, scores: {
     businessImpact: number;
@@ -143,18 +143,18 @@ export const useCasesAPI = {
     timeToValue: number;
   }) => {
     const response = await api.post(`/workshop-usecases/${workshopId}/usecase/${useCaseId}/score`, scores);
-    return response.data;
+    return response.data.useCases || [];
   },
 };
 
 export const actionPlansAPI = {
   getByWorkshop: async (workshopId: string) => {
     const response = await api.get(`/workshop-actionplans/${workshopId}`);
-    return response.data;
+    return response.data.actionPlans || [];
   },
   getById: async (workshopId: string, actionPlanId: string) => {
     const response = await api.get(`/workshop-actionplans/${workshopId}/actionplan/${actionPlanId}`);
-    return response.data;
+    return response.data.actionPlan || {};
   },
   create: async (workshopId: string, useCaseId: string, data: {
     title: string;
@@ -163,7 +163,7 @@ export const actionPlansAPI = {
     owner: string;
   }) => {
     const response = await api.post(`/workshop-actionplans/${workshopId}`, { ...data, useCaseId });
-    return response.data;
+    return response.data.actionPlan || {};
   },
   update: async (workshopId: string, actionPlanId: string, data: {
     title?: string;
@@ -179,7 +179,7 @@ export const actionPlansAPI = {
     status?: 'not_started' | 'in_progress' | 'completed';
   }) => {
     const response = await api.put(`/workshop-actionplans/${workshopId}/actionplan/${actionPlanId}`, data);
-    return response.data;
+    return response.data.actionPlan || {};
   },
 };
 
