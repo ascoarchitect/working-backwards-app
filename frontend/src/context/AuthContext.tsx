@@ -11,9 +11,11 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, role: 'participant' | 'facilitator') => Promise<void>;
+  login: (email: string) => Promise<void>;
+  register: (name: string, email: string, role: 'participant' | 'facilitator') => Promise<void>;
   logout: () => void;
+  allUsers: User[];
+  loadAllUsers: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,11 +53,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     loadUser();
+    loadAllUsers(); // Load all users when the app starts
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const loadAllUsers = async () => {
     try {
-      const response = await authAPI.login(email, password);
+      const response = await authAPI.getAllUsers();
+      setAllUsers(response.users || []);
+    } catch (error) {
+      console.error('Error loading all users:', error);
+    }
+  };
+
+  const login = async (email: string) => {
+    try {
+      const response = await authAPI.login(email);
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify({
         token: response.token,
@@ -66,14 +79,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, role: 'participant' | 'facilitator') => {
+  const register = async (name: string, email: string, role: 'participant' | 'facilitator') => {
     try {
-      const response = await authAPI.register(name, email, password, role);
+      const response = await authAPI.register(name, email, role);
       setUser(response.user);
       localStorage.setItem('user', JSON.stringify({
         token: response.token,
         user: response.user
       }));
+      await loadAllUsers();
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
@@ -90,7 +104,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      login, 
+      register, 
+      logout, 
+      allUsers,
+      loadAllUsers
+    }}>
       {children}
     </AuthContext.Provider>
   );

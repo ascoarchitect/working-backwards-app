@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
@@ -21,7 +20,7 @@ const generateToken = (user) => {
 
 const register = async (event) => {
   try {
-    const { name, email, password, role } = JSON.parse(event.body);
+    const { name, email, role } = JSON.parse(event.body);
 
     const existingUser = await dynamoDB.query({
       TableName: userTable,
@@ -44,15 +43,11 @@ const register = async (event) => {
       };
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
     const userId = uuidv4();
     const newUser = {
       id: userId,
       name,
       email,
-      password: hashedPassword,
       role: role || 'participant',
       createdAt: new Date().toISOString()
     };
@@ -64,9 +59,6 @@ const register = async (event) => {
 
     const token = generateToken(newUser);
 
-    const userWithoutPassword = { ...newUser };
-    delete userWithoutPassword.password;
-
     return {
       statusCode: 201,
       headers: {
@@ -76,7 +68,7 @@ const register = async (event) => {
       },
       body: JSON.stringify({
         message: 'User registered successfully',
-        user: userWithoutPassword,
+        user: newUser,
         token
       })
     };
@@ -96,7 +88,7 @@ const register = async (event) => {
 
 const login = async (event) => {
   try {
-    const { email, password } = JSON.parse(event.body);
+    const { email } = JSON.parse(event.body);
 
     const result = await dynamoDB.query({
       TableName: userTable,
@@ -115,29 +107,17 @@ const login = async (event) => {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({ message: 'Invalid credentials' })
+        body: JSON.stringify({ message: 'User not found' })
       };
     }
 
     const user = result.Items[0];
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return {
-        statusCode: 401,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'Invalid credentials' })
-      };
-    }
-
     const token = generateToken(user);
 
     const userWithoutPassword = { ...user };
-    delete userWithoutPassword.password;
+    if (userWithoutPassword.password) {
+      delete userWithoutPassword.password;
+    }
 
     return {
       statusCode: 200,
@@ -168,26 +148,49 @@ const login = async (event) => {
 
 const getCurrentUser = async (event) => {
   try {
+    let userId = null;
     const token = event.headers.Authorization?.split(' ')[1];
     
-    if (!token) {
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, jwtSecret);
+        userId = decoded.id;
+      } catch (error) {
+        console.log('Token verification failed, but continuing without authentication');
+      }
+    }
+    
+    if (event.queryStringParameters && event.queryStringParameters.userId) {
+      userId = event.queryStringParameters.userId;
+    }
+    
+    if (!userId) {
+      const allUsers = await dynamoDB.scan({
+        TableName: userTable,
+        ProjectionExpression: 'id, #name, email, #role',
+        ExpressionAttributeNames: {
+          '#name': 'name',
+          '#role': 'role'
+        }
+      }).promise();
+      
       return {
-        statusCode: 401,
+        statusCode: 200,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({ message: 'No token provided' })
+        body: JSON.stringify({
+          users: allUsers.Items || []
+        })
       };
     }
-
-    const decoded = jwt.verify(token, jwtSecret);
-
+    
     const result = await dynamoDB.get({
       TableName: userTable,
       Key: {
-        id: decoded.id
+        id: userId
       }
     }).promise();
 
@@ -204,7 +207,9 @@ const getCurrentUser = async (event) => {
     }
 
     const userWithoutPassword = { ...result.Item };
-    delete userWithoutPassword.password;
+    if (userWithoutPassword.password) {
+      delete userWithoutPassword.password;
+    }
 
     return {
       statusCode: 200,
@@ -218,15 +223,15 @@ const getCurrentUser = async (event) => {
       })
     };
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.error('Error getting user information:', error);
     return {
-      statusCode: 401,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true
       },
-      body: JSON.stringify({ message: 'Invalid token' })
+      body: JSON.stringify({ message: 'Error getting user information' })
     };
   }
 };
