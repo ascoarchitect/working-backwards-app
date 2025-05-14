@@ -7,46 +7,10 @@ const useCaseTable = process.env.USE_CASES_TABLE;
 const participantTable = process.env.PARTICIPANTS_TABLE;
 const jwtSecret = process.env.JWT_SECRET;
 
-const verifyToken = (token) => {
-  if (!token) {
-    throw new Error('No token provided');
-  }
-
-  try {
-    return jwt.verify(token, jwtSecret);
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
-};
-
 const getUseCases = async (event) => {
   try {
     const { workshopId } = event.pathParameters;
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
-
-    const userParticipantResult = await dynamoDB.query({
-      TableName: participantTable,
-      IndexName: 'WorkshopUserIndex',
-      KeyConditionExpression: 'workshopId = :workshopId AND userId = :userId',
-      ExpressionAttributeValues: {
-        ':workshopId': workshopId,
-        ':userId': user.id
-      }
-    }).promise();
-
-    if (!userParticipantResult.Items || userParticipantResult.Items.length === 0) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'You are not a participant in this workshop' })
-      };
-    }
-
+    
     const useCasesResult = await dynamoDB.query({
       TableName: useCaseTable,
       IndexName: 'WorkshopIndex',
@@ -68,7 +32,7 @@ const getUseCases = async (event) => {
   } catch (error) {
     console.error('Error getting use cases:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -88,33 +52,11 @@ const createUseCase = async (event) => {
       currentProcess, 
       desiredOutcome, 
       metrics,
-      painPointIds 
+      painPointIds,
+      createdBy,
+      createdByName
     } = JSON.parse(event.body);
     
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
-
-    const userParticipantResult = await dynamoDB.query({
-      TableName: participantTable,
-      IndexName: 'WorkshopUserIndex',
-      KeyConditionExpression: 'workshopId = :workshopId AND userId = :userId',
-      ExpressionAttributeValues: {
-        ':workshopId': workshopId,
-        ':userId': user.id
-      }
-    }).promise();
-
-    if (!userParticipantResult.Items || userParticipantResult.Items.length === 0) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'You are not a participant in this workshop' })
-      };
-    }
 
     const useCaseId = uuidv4();
     const newUseCase = {
@@ -131,8 +73,8 @@ const createUseCase = async (event) => {
       timeToValue: 0,
       totalScore: 0,
       isScored: false,
-      createdBy: user.id,
-      createdByName: user.name || 'Unknown',
+      createdBy: createdBy || 'anonymous',
+      createdByName: createdByName || 'Anonymous User',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -157,7 +99,7 @@ const createUseCase = async (event) => {
   } catch (error) {
     console.error('Error creating use case:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -180,30 +122,6 @@ const updateUseCase = async (event) => {
       painPointIds 
     } = JSON.parse(event.body);
     
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
-
-    const userParticipantResult = await dynamoDB.query({
-      TableName: participantTable,
-      IndexName: 'WorkshopUserIndex',
-      KeyConditionExpression: 'workshopId = :workshopId AND userId = :userId',
-      ExpressionAttributeValues: {
-        ':workshopId': workshopId,
-        ':userId': user.id
-      }
-    }).promise();
-
-    if (!userParticipantResult.Items || userParticipantResult.Items.length === 0) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'You are not a participant in this workshop' })
-      };
-    }
 
     const useCaseResult = await dynamoDB.get({
       TableName: useCaseTable,
@@ -295,7 +213,7 @@ const updateUseCase = async (event) => {
   } catch (error) {
     console.error('Error updating use case:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -309,34 +227,9 @@ const updateUseCase = async (event) => {
 const scoreUseCases = async (event) => {
   try {
     const { workshopId } = event.pathParameters;
-    const { scores } = JSON.parse(event.body);
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
-
-    const userParticipantResult = await dynamoDB.query({
-      TableName: participantTable,
-      IndexName: 'WorkshopUserIndex',
-      KeyConditionExpression: 'workshopId = :workshopId AND userId = :userId',
-      ExpressionAttributeValues: {
-        ':workshopId': workshopId,
-        ':userId': user.id
-      }
-    }).promise();
-
-    if (!userParticipantResult.Items || userParticipantResult.Items.length === 0) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'You are not a participant in this workshop' })
-      };
-    }
-
-    const facilitator = userParticipantResult.Items[0];
-    if (facilitator.role !== 'facilitator') {
+    const { scores, role } = JSON.parse(event.body);
+    
+    if (role && role !== 'facilitator') {
       return {
         statusCode: 403,
         headers: {
@@ -396,7 +289,7 @@ const scoreUseCases = async (event) => {
   } catch (error) {
     console.error('Error scoring use cases:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',

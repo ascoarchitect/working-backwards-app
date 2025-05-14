@@ -30,16 +30,20 @@ api.interceptors.request.use(
 );
 
 export const authAPI = {
-  login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+  login: async (email: string) => {
+    const response = await api.post('/auth/login', { email });
     return response.data;
   },
-  register: async (name: string, email: string, password: string, role: 'participant' | 'facilitator') => {
-    const response = await api.post('/auth/register', { name, email, password, role });
+  register: async (name: string, email: string, role: 'participant' | 'facilitator') => {
+    const response = await api.post('/auth/register', { name, email, role });
     return response.data;
   },
   getCurrentUser: async () => {
     const response = await api.get('/auth/me');
+    return response.data;
+  },
+  getAllUsers: async () => {
+    const response = await api.get('/auth/me?getAllUsers=true');
     return response.data;
   },
 };

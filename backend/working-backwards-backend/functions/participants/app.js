@@ -7,46 +7,10 @@ const participantTable = process.env.PARTICIPANTS_TABLE;
 const workshopTable = process.env.WORKSHOPS_TABLE;
 const jwtSecret = process.env.JWT_SECRET;
 
-const verifyToken = (token) => {
-  if (!token) {
-    throw new Error('No token provided');
-  }
-
-  try {
-    return jwt.verify(token, jwtSecret);
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
-};
-
 const getParticipants = async (event) => {
   try {
     const { workshopId } = event.pathParameters;
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
-
-    const userParticipantResult = await dynamoDB.query({
-      TableName: participantTable,
-      IndexName: 'WorkshopUserIndex',
-      KeyConditionExpression: 'workshopId = :workshopId AND userId = :userId',
-      ExpressionAttributeValues: {
-        ':workshopId': workshopId,
-        ':userId': user.id
-      }
-    }).promise();
-
-    if (!userParticipantResult.Items || userParticipantResult.Items.length === 0) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'You are not a participant in this workshop' })
-      };
-    }
-
+    
     const participantsResult = await dynamoDB.query({
       TableName: participantTable,
       IndexName: 'WorkshopIndex',
@@ -68,7 +32,7 @@ const getParticipants = async (event) => {
   } catch (error) {
     console.error('Error getting participants:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -82,9 +46,7 @@ const getParticipants = async (event) => {
 const addParticipant = async (event) => {
   try {
     const { workshopId } = event.pathParameters;
-    const { email, name, role } = JSON.parse(event.body);
-    const token = event.headers.Authorization?.split(' ')[1];
-    const user = verifyToken(token);
+    const { email, name, role, userId } = JSON.parse(event.body);
 
     const workshopResult = await dynamoDB.get({
       TableName: workshopTable,
@@ -105,17 +67,6 @@ const addParticipant = async (event) => {
       };
     }
 
-    if (workshopResult.Item.facilitator !== user.id) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true
-        },
-        body: JSON.stringify({ message: 'Only the facilitator can add participants' })
-      };
-    }
 
     const existingParticipantResult = await dynamoDB.query({
       TableName: participantTable,
@@ -143,7 +94,7 @@ const addParticipant = async (event) => {
     const newParticipant = {
       id: participantId,
       workshopId,
-      userId: null, // Will be set when the user registers
+      userId: userId || null, // Can be set directly now
       name,
       email,
       role: role || 'participant',
@@ -170,7 +121,7 @@ const addParticipant = async (event) => {
   } catch (error) {
     console.error('Error adding participant:', error);
     return {
-      statusCode: error.message === 'Invalid token' || error.message === 'No token provided' ? 401 : 500,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
