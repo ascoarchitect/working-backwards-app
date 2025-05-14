@@ -312,11 +312,11 @@ const ActionPlans: React.FC = () => {
                                 </button>
                               </div>
                               
-                              {plan.tasks.length === 0 ? (
+                              {!plan.tasks || plan.tasks.length === 0 ? (
                                 <p className="text-sm text-gray-500">No tasks added yet.</p>
                               ) : (
                                 <ul className="divide-y divide-gray-200 border border-gray-200 rounded-md">
-                                  {plan.tasks.map((task) => (
+                                  {plan.tasks && plan.tasks.map((task) => (
                                     <li key={task.id} className="px-3 py-3 flex items-start justify-between">
                                       <div className="min-w-0 flex-1">
                                         <div className="flex items-center">
