@@ -160,8 +160,33 @@ const getCurrentUser = async (event) => {
       }
     }
     
-    if (event.queryStringParameters && event.queryStringParameters.userId) {
-      userId = event.queryStringParameters.userId;
+    if (event.queryStringParameters) {
+      if (event.queryStringParameters.userId) {
+        userId = event.queryStringParameters.userId;
+      }
+      
+      if (event.queryStringParameters.getAllUsers === 'true') {
+        const allUsers = await dynamoDB.scan({
+          TableName: userTable,
+          ProjectionExpression: 'id, #name, email, #role',
+          ExpressionAttributeNames: {
+            '#name': 'name',
+            '#role': 'role'
+          }
+        }).promise();
+        
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+          },
+          body: JSON.stringify({
+            users: allUsers.Items || []
+          })
+        };
+      }
     }
     
     if (!userId) {
