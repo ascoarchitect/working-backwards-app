@@ -112,20 +112,16 @@ const PainPoints: React.FC = () => {
     
     try {
       const consolidatedData = {
-        title: 'Consolidated',
         description: consolidationDescription,
-        submittedBy: user?.name || 'Unknown',
         category: painPoints.find(p => p.id === selectedPainPoints[0])?.category || 'process',
         impact: 'high',
-        sourceIds: selectedPainPoints,
-        isConsolidated: true
+        painPointIds: selectedPainPoints,
+        createdBy: user?.id || 'anonymous',
+        createdByName: user?.name || 'Unknown',
+        role: user?.role || 'participant'
       };
       
-      await painPointsAPI.add(workshopId, consolidatedData);
-      
-      for (const id of selectedPainPoints) {
-        await painPointsAPI.update(workshopId, id, { category: 'consolidated' });
-      }
+      await painPointsAPI.consolidate(workshopId, consolidatedData);
       
       const data = await painPointsAPI.getByWorkshop(workshopId);
       const regular = data.filter((p: PainPoint) => !p.isConsolidated);
