@@ -320,13 +320,13 @@ exports.handler = async (event) => {
   const path = event.path;
   const method = event.httpMethod;
 
-  if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/usecases$/) && method === 'GET') {
+  if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+$/) && method === 'GET') {
     return getUseCases(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/usecases$/) && method === 'POST') {
+  } else if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+$/) && method === 'POST') {
     return createUseCase(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/usecases\/[a-zA-Z0-9-]+$/) && method === 'PUT') {
+  } else if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+\/usecase\/[a-zA-Z0-9-]+$/) && method === 'PUT') {
     return updateUseCase(event);
-  } else if (path.match(/^\/workshops\/[a-zA-Z0-9-]+\/usecases\/score$/) && method === 'POST') {
+  } else if (path.match(/^\/workshop-usecases\/[a-zA-Z0-9-]+\/score$/) && method === 'POST') {
     return scoreUseCases(event);
   } else {
     return {
