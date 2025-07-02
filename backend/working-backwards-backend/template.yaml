@@ -394,6 +394,8 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref ActionPlansTable
         - DynamoDBCrudPolicy:
+            TableName: !Ref UseCasesTable
+        - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantsTable
         - DynamoDBCrudPolicy:
             TableName: !Ref WorkshopsTable
@@ -410,11 +412,29 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /workshop-actionplans/{workshopId}
             Method: post
+        GetWorkshopActionPlans:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshop-actionplans/{workshopId}
+            Method: get
+        GetActionPlanById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshop-actionplans/{workshopId}/actionplan/{actionPlanId}
+            Method: get
         UpdateActionPlan:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
             Path: /usecases/{useCaseId}/actionplans/{id}
+            Method: put
+        UpdateWorkshopActionPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /workshop-actionplans/{workshopId}/actionplan/{actionPlanId}
             Method: put
 
   AuthFunction:

@@ -7,46 +7,79 @@ const useCaseTable = process.env.USE_CASES_TABLE;
 
 const getActionPlans = async (event) => {
   try {
-    const { useCaseId } = event.pathParameters;
+    // Handle both workshopId and useCaseId patterns
+    const { workshopId, useCaseId } = event.pathParameters;
 
-    const useCaseResult = await dynamoDB.get({
-      TableName: useCaseTable,
-      Key: {
-        id: useCaseId
-      }
-    }).promise();
+    if (workshopId) {
+      // Get action plans by workshop
+      const actionPlansResult = await dynamoDB.query({
+        TableName: actionPlanTable,
+        IndexName: 'WorkshopIndex',
+        KeyConditionExpression: 'workshopId = :workshopId',
+        ExpressionAttributeValues: {
+          ':workshopId': workshopId
+        }
+      }).promise();
 
-    if (!useCaseResult.Item) {
       return {
-        statusCode: 404,
+        statusCode: 200,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({ message: 'Use case not found' })
+        body: JSON.stringify({ actionPlans: actionPlansResult.Items || [] })
+      };
+    } else if (useCaseId) {
+      // Get action plans by use case (existing functionality)
+      const useCaseResult = await dynamoDB.get({
+        TableName: useCaseTable,
+        Key: {
+          id: useCaseId
+        }
+      }).promise();
+
+      if (!useCaseResult.Item) {
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+          },
+          body: JSON.stringify({ message: 'Use case not found' })
+        };
+      }
+
+      const actionPlansResult = await dynamoDB.query({
+        TableName: actionPlanTable,
+        IndexName: 'UseCaseIndex',
+        KeyConditionExpression: 'useCaseId = :useCaseId',
+        ExpressionAttributeValues: {
+          ':useCaseId': useCaseId
+        }
+      }).promise();
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ actionPlans: actionPlansResult.Items || [] })
+      };
+    } else {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ message: 'Either workshopId or useCaseId is required' })
       };
     }
-
-
-    const actionPlansResult = await dynamoDB.query({
-      TableName: actionPlanTable,
-      IndexName: 'UseCaseIndex',
-      KeyConditionExpression: 'useCaseId = :useCaseId',
-      ExpressionAttributeValues: {
-        ':useCaseId': useCaseId
-      }
-    }).promise();
-
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true
-      },
-      body: JSON.stringify({ actionPlans: actionPlansResult.Items || [] })
-    };
   } catch (error) {
     console.error('Error getting action plans:', error);
     return {
@@ -63,7 +96,8 @@ const getActionPlans = async (event) => {
 
 const createActionPlan = async (event) => {
   try {
-    const { useCaseId } = event.pathParameters;
+    // Handle both workshopId and useCaseId patterns
+    const { workshopId, useCaseId: pathUseCaseId } = event.pathParameters;
     const { 
       title, 
       description, 
@@ -71,36 +105,89 @@ const createActionPlan = async (event) => {
       owner,
       dueDate,
       createdBy,
-      createdByName
+      createdByName,
+      useCaseId: bodyUseCaseId
     } = JSON.parse(event.body);
-    
-    const useCaseResult = await dynamoDB.get({
-      TableName: useCaseTable,
-      Key: {
-        id: useCaseId
-      }
-    }).promise();
 
-    if (!useCaseResult.Item) {
+    let finalWorkshopId = workshopId;
+    let finalUseCaseId = pathUseCaseId || bodyUseCaseId;
+
+    if (workshopId && bodyUseCaseId) {
+      // Workshop-based creation - useCaseId comes from request body
+      finalUseCaseId = bodyUseCaseId;
+      finalWorkshopId = workshopId;
+
+      // Validate that the use case belongs to this workshop
+      const useCaseResult = await dynamoDB.get({
+        TableName: useCaseTable,
+        Key: {
+          id: finalUseCaseId
+        }
+      }).promise();
+
+      if (!useCaseResult.Item) {
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+          },
+          body: JSON.stringify({ message: 'Use case not found' })
+        };
+      }
+
+      if (useCaseResult.Item.workshopId !== workshopId) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+          },
+          body: JSON.stringify({ message: 'Use case does not belong to this workshop' })
+        };
+      }
+    } else if (pathUseCaseId) {
+      // Use case-based creation (existing functionality)
+      const useCaseResult = await dynamoDB.get({
+        TableName: useCaseTable,
+        Key: {
+          id: pathUseCaseId
+        }
+      }).promise();
+
+      if (!useCaseResult.Item) {
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true
+          },
+          body: JSON.stringify({ message: 'Use case not found' })
+        };
+      }
+
+      finalWorkshopId = useCaseResult.Item.workshopId;
+      finalUseCaseId = pathUseCaseId;
+    } else {
       return {
-        statusCode: 404,
+        statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({ message: 'Use case not found' })
+        body: JSON.stringify({ message: 'Either workshopId with useCaseId in body, or useCaseId in path is required' })
       };
     }
-
-    const workshopId = useCaseResult.Item.workshopId;
-
 
     const actionPlanId = uuidv4();
     const newActionPlan = {
       id: actionPlanId,
-      useCaseId,
-      workshopId,
+      useCaseId: finalUseCaseId,
+      workshopId: finalWorkshopId,
       title,
       description,
       tasks: tasks || [],
@@ -146,7 +233,10 @@ const createActionPlan = async (event) => {
 
 const updateActionPlan = async (event) => {
   try {
-    const { id } = event.pathParameters;
+    // Handle both pattern types
+    const { workshopId, id, actionPlanId } = event.pathParameters;
+    const finalActionPlanId = id || actionPlanId;
+    
     const { 
       title, 
       description, 
@@ -159,7 +249,7 @@ const updateActionPlan = async (event) => {
     const actionPlanResult = await dynamoDB.get({
       TableName: actionPlanTable,
       Key: {
-        id
+        id: finalActionPlanId
       }
     }).promise();
 
@@ -175,6 +265,18 @@ const updateActionPlan = async (event) => {
       };
     }
 
+    // If workshopId is provided, verify the action plan belongs to this workshop
+    if (workshopId && actionPlanResult.Item.workshopId !== workshopId) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ message: 'Action plan does not belong to this workshop' })
+      };
+    }
 
     const updateExpression = [];
     const expressionAttributeValues = {};
@@ -219,7 +321,7 @@ const updateActionPlan = async (event) => {
     await dynamoDB.update({
       TableName: actionPlanTable,
       Key: {
-        id
+        id: finalActionPlanId
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -230,7 +332,7 @@ const updateActionPlan = async (event) => {
     const updatedActionPlanResult = await dynamoDB.get({
       TableName: actionPlanTable,
       Key: {
-        id
+        id: finalActionPlanId
       }
     }).promise();
 
@@ -260,6 +362,65 @@ const updateActionPlan = async (event) => {
   }
 };
 
+const getActionPlanById = async (event) => {
+  try {
+    const { workshopId, actionPlanId } = event.pathParameters;
+    
+    const actionPlanResult = await dynamoDB.get({
+      TableName: actionPlanTable,
+      Key: {
+        id: actionPlanId
+      }
+    }).promise();
+
+    if (!actionPlanResult.Item) {
+      return {
+        statusCode: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ message: 'Action plan not found' })
+      };
+    }
+
+    // Verify the action plan belongs to this workshop
+    if (actionPlanResult.Item.workshopId !== workshopId) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: JSON.stringify({ message: 'Action plan does not belong to this workshop' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({ actionPlan: actionPlanResult.Item })
+    };
+  } catch (error) {
+    console.error('Error getting action plan:', error);
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify({ message: error.message || 'Error getting action plan' })
+    };
+  }
+};
+
 exports.handler = async (event) => {
   console.log('Event:', JSON.stringify(event));
 
@@ -284,7 +445,18 @@ exports.handler = async (event) => {
   const path = event.path;
   const method = event.httpMethod;
 
-  if (path.match(/^\/usecases\/[a-zA-Z0-9-]+\/actionplans$/) && method === 'GET') {
+  // Workshop-based routes (primary) - more specific routes first
+  if (path.match(/^\/workshop-actionplans\/[a-zA-Z0-9-]+\/actionplan\/[a-zA-Z0-9-]+$/) && method === 'GET') {
+    return getActionPlanById(event);
+  } else if (path.match(/^\/workshop-actionplans\/[a-zA-Z0-9-]+\/actionplan\/[a-zA-Z0-9-]+$/) && method === 'PUT') {
+    return updateActionPlan(event);
+  } else if (path.match(/^\/workshop-actionplans\/[a-zA-Z0-9-]+$/) && method === 'GET') {
+    return getActionPlans(event);
+  } else if (path.match(/^\/workshop-actionplans\/[a-zA-Z0-9-]+$/) && method === 'POST') {
+    return createActionPlan(event);
+  }
+  // Use case-based routes (legacy support)
+  else if (path.match(/^\/usecases\/[a-zA-Z0-9-]+\/actionplans$/) && method === 'GET') {
     return getActionPlans(event);
   } else if (path.match(/^\/usecases\/[a-zA-Z0-9-]+\/actionplans$/) && method === 'POST') {
     return createActionPlan(event);
