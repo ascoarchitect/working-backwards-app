@@ -1,5 +1,7 @@
 # Working Backwards Workshop Application
 
+[![CI/CD Pipeline](https://github.com/ascoarchitect/working-backwards-app/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ascoarchitect/working-backwards-app/actions/workflows/ci-cd.yml)
+
 A serverless web application that digitizes the "Working Backwards" workshop process for software development teams. The application guides users through a structured ideation and prioritization process.
 
 ## Architecture
