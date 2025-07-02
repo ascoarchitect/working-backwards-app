@@ -26,6 +26,7 @@ interface PainPoint {
   impact?: 'low' | 'medium' | 'high';
   title?: string;
   submittedBy?: string;
+  isConsolidated?: boolean;
 }
 
 interface UseCase {
@@ -250,20 +251,60 @@ const Report: React.FC = () => {
           <div className="mt-8 print:mt-6 print:break-inside-avoid">
             <h3 className="text-xl font-semibold text-gray-900 print:text-lg">Identified Pain Points</h3>
             {painPoints.length > 0 ? (
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {painPoints.map((painPoint) => (
-                  <div key={painPoint.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
-                    <div className="px-4 py-5 sm:p-6">
-                      <div className="flex justify-between items-start">
-                        <h4 className="text-lg font-medium text-gray-900">{painPoint.description}</h4>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(painPoint.impact || 'low')}`}>
-                          {painPoint.impact || 'low'}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">Category: {painPoint.category || 'Uncategorized'}</p>
+              <div className="mt-4">
+                {/* Consolidated Pain Points */}
+                {painPoints.filter(p => p.isConsolidated).length > 0 && (
+                  <div className="mb-8">
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
+                        Consolidated
+                      </span>
+                      Consolidated Pain Points ({painPoints.filter(p => p.isConsolidated).length})
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {painPoints.filter(p => p.isConsolidated).map((painPoint) => (
+                        <div key={painPoint.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200 border-l-4 border-l-green-500">
+                          <div className="px-4 py-5 sm:p-6">
+                            <div className="flex justify-between items-start">
+                              <h5 className="text-lg font-medium text-gray-900">{painPoint.description}</h5>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(painPoint.impact || 'low')}`}>
+                                {painPoint.impact || 'low'}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500">Category: {painPoint.category || 'Uncategorized'}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+                
+                {/* Non-Consolidated Pain Points */}
+                {painPoints.filter(p => !p.isConsolidated).length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mr-2">
+                        Individual
+                      </span>
+                      Individual Pain Points ({painPoints.filter(p => !p.isConsolidated).length})
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {painPoints.filter(p => !p.isConsolidated).map((painPoint) => (
+                        <div key={painPoint.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
+                          <div className="px-4 py-5 sm:p-6">
+                            <div className="flex justify-between items-start">
+                              <h5 className="text-lg font-medium text-gray-900">{painPoint.description}</h5>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(painPoint.impact || 'low')}`}>
+                                {painPoint.impact || 'low'}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500">Category: {painPoint.category || 'Uncategorized'}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="mt-4 text-center text-gray-500">
@@ -416,6 +457,7 @@ const Report: React.FC = () => {
               <div className="px-4 py-5 sm:p-6">
                 <p className="text-sm text-gray-600">
                   This report summarizes the outcomes of the "{workshop.name}" workshop. The team identified {painPoints.length} key pain points
+                  ({painPoints.filter(p => p.isConsolidated).length} consolidated, {painPoints.filter(p => !p.isConsolidated).length} individual)
                   in the current software development lifecycle and developed {useCases.length} use cases to address these challenges.
                   The use cases were prioritized based on business impact, implementation feasibility, and time to value.
                 </p>
