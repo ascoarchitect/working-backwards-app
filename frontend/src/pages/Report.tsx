@@ -364,31 +364,138 @@ const Report: React.FC = () => {
           <div className="mt-8 print:mt-6 print:break-inside-avoid">
             <h3 className="text-xl font-semibold text-gray-900 print:text-lg">Prioritized Use Cases</h3>
             {useCases.length > 0 ? (
-              <div className="mt-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg print:ring-0 print:shadow-none">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Use Case</th>
-                      <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Business Impact</th>
-                      <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Feasibility</th>
-                      <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Time to Value</th>
-                      <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">Total Score</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {useCases
-                      .sort((a, b) => b.totalScore - a.totalScore)
-                      .map((useCase) => (
-                        <tr key={useCase.id}>
-                          <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{useCase.title}</td>
-                          <td className="px-3 py-4 text-sm text-gray-500 text-center">{useCase.businessImpact || 0}</td>
-                          <td className="px-3 py-4 text-sm text-gray-500 text-center">{useCase.feasibility || 0}</td>
-                          <td className="px-3 py-4 text-sm text-gray-500 text-center">{useCase.timeToValue || 0}</td>
-                          <td className="px-3 py-4 text-sm font-bold text-indigo-600 text-center">{useCase.totalScore || 0}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+              <div className="mt-4 space-y-4">
+                {useCases
+                  .sort((a, b) => b.totalScore - a.totalScore)
+                  .map((useCase) => (
+                    <div key={useCase.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
+                      <div className="p-6 sm:flex">
+                        <div className="sm:w-2/3 sm:pr-8">
+                          <div className="flex justify-between items-start mb-4">
+                            <h4 className="text-lg font-medium text-gray-900">{useCase.title}</h4>
+                          </div>
+                          <div className="space-y-3">
+                            <div>
+                              <span className="text-sm font-medium text-gray-500">Problem Statement:</span>
+                              <p className="mt-1 text-sm text-gray-900">{useCase.problemStatement}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-gray-500">Current Process:</span>
+                              <p className="mt-1 text-sm text-gray-900">{useCase.currentProcess}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-gray-500">Desired Outcome:</span>
+                              <p className="mt-1 text-sm text-gray-900">{useCase.desiredOutcome}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="sm:w-1/3 flex flex-col items-center justify-center border-t pt-4 sm:border-t-0 sm:pt-0 sm:border-l sm:pl-8 mt-4 sm:mt-0">
+                          <div className="w-full max-w-xs bg-gray-50 rounded-lg p-4 shadow-sm">
+                            <h5 className="text-sm font-medium text-gray-500 text-center mb-2">Prioritization Score</h5>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-gray-500">Business Impact:</span>
+                              <div className="flex items-center">
+                                {[1, 2, 3, 4, 5].map((score) => (
+                                  <div
+                                    key={score}
+                                    className={`w-4 h-4 mx-0.5 rounded-full ${
+                                      score <= (useCase.businessImpact || 0) ? 'bg-indigo-500' : 'bg-gray-200'
+                                    }`}
+                                  ></div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs text-gray-500">Feasibility:</span>
+                              <div className="flex items-center">
+                                {[1, 2, 3, 4, 5].map((score) => (
+                                  <div
+                                    key={score}
+                                    className={`w-4 h-4 mx-0.5 rounded-full ${
+                                      score <= (useCase.feasibility || 0) ? 'bg-indigo-500' : 'bg-gray-200'
+                                    }`}
+                                  ></div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-xs text-gray-500">Time to Value:</span>
+                              <div className="flex items-center">
+                                {[1, 2, 3, 4, 5].map((score) => (
+                                  <div
+                                    key={score}
+                                    className={`w-4 h-4 mx-0.5 rounded-full ${
+                                      score <= (useCase.timeToValue || 0) ? 'bg-indigo-500' : 'bg-gray-200'
+                                    }`}
+                                  ></div>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center border-t border-gray-200 pt-2">
+                              <span className="text-sm font-medium text-gray-700">Total Score:</span>
+                              <span className="text-lg font-bold text-indigo-600">{useCase.totalScore || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Action Plans for this Use Case */}
+                      {actionPlans.filter(plan => plan.useCaseId === useCase.id).length > 0 && (
+                        <div className="border-t border-gray-200 px-6 py-4">
+                          <h5 className="text-md font-medium text-gray-900 mb-3">Action Plans</h5>
+                          {actionPlans.filter(plan => plan.useCaseId === useCase.id).map((plan) => (
+                            <div key={plan.id} className="mb-4 last:mb-0 bg-gray-50 rounded-lg p-4">
+                              <div className="flex justify-between items-center mb-2">
+                                <h6 className="text-sm font-medium text-gray-900">{plan.title}</h6>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(plan.status)}`}>
+                                  {getStatusText(plan.status)}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                              <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 mb-3">
+                                <div>
+                                  <span className="text-xs font-medium text-gray-500">Owner:</span>
+                                  <p className="text-sm text-gray-900">{plan.owner}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs font-medium text-gray-500">Timeline:</span>
+                                  <p className="text-sm text-gray-900">
+                                    {plan.startDate && plan.endDate ? (
+                                      `${new Date(plan.startDate).toLocaleDateString()} to ${new Date(plan.endDate).toLocaleDateString()}`
+                                    ) : (
+                                      'No timeline set'
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              {plan.tasks && plan.tasks.length > 0 && (
+                                <div>
+                                  <h6 className="text-xs font-medium text-gray-700 mb-2">Tasks</h6>
+                                  <div className="space-y-1">
+                                    {plan.tasks.map((task) => (
+                                      <div key={task.id} className="flex justify-between items-center bg-white rounded px-3 py-2 text-xs">
+                                        <div className="flex-1">
+                                          <span className="text-gray-900">{task.description}</span>
+                                          <span className="text-gray-500 ml-2">({task.owner})</span>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <span className="text-gray-500">{new Date(task.dueDate).toLocaleDateString()}</span>
+                                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
+                                            {getStatusText(task.status)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </div>
             ) : (
               <div className="mt-4 text-center text-gray-500">
@@ -396,108 +503,6 @@ const Report: React.FC = () => {
               </div>
             )}
           </div>
-          
-          {useCases.sort((a, b) => b.totalScore - a.totalScore).map((useCase) => (
-            <div key={useCase.id} className="mt-8 print:mt-6 print:break-inside-avoid">
-              <h3 className="text-xl font-semibold text-gray-900 print:text-lg">Use Case: {useCase.title}</h3>
-              <div className="mt-4 bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
-                <div className="px-4 py-5 sm:p-6">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <dt className="text-sm font-medium text-gray-500">Problem Statement</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.problemStatement}</dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="text-sm font-medium text-gray-500">Current Process</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.currentProcess}</dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="text-sm font-medium text-gray-500">Desired Outcome</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.desiredOutcome}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Business Impact</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.businessImpact || 0} / 5</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Implementation Feasibility</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.feasibility || 0} / 5</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Time to Value</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{useCase.timeToValue || 0} / 5</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">Total Score</dt>
-                      <dd className="mt-1 text-sm font-bold text-indigo-600">{useCase.totalScore || 0} / 15</dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-              
-              {actionPlans.filter(plan => plan.useCaseId === useCase.id).map((plan) => (
-                <div key={plan.id} className="mt-4 bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
-                  <div className="px-4 py-5 sm:p-6">
-                    <div className="flex justify-between items-center">
-                      <h4 className="text-lg font-medium text-gray-900">Action Plan: {plan.title}</h4>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(plan.status)}`}>
-                        {getStatusText(plan.status)}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-600">{plan.description}</p>
-                    <div className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
-                      <div className="col-span-1">
-                        <span className="text-xs font-medium text-gray-500">Owner:</span>
-                        <p className="text-sm text-gray-900">{plan.owner}</p>
-                      </div>
-                      <div className="col-span-1">
-                        <span className="text-xs font-medium text-gray-500">Timeline:</span>
-                        <p className="text-sm text-gray-900">
-                          {plan.startDate && plan.endDate ? (
-                            `${new Date(plan.startDate).toLocaleDateString()} to ${new Date(plan.endDate).toLocaleDateString()}`
-                          ) : (
-                            'No timeline set'
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">Tasks</h5>
-                      {plan.tasks && plan.tasks.length > 0 ? (
-                        <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-md">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                              <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {plan.tasks.map((task) => (
-                              <tr key={task.id}>
-                                <td className="px-3 py-2 text-xs text-gray-900">{task.description}</td>
-                                <td className="px-3 py-2 text-xs text-gray-500">{task.owner}</td>
-                                <td className="px-3 py-2 text-xs text-gray-500">{new Date(task.dueDate).toLocaleDateString()}</td>
-                                <td className="px-3 py-2 text-xs">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
-                                    {getStatusText(task.status)}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p className="text-sm text-gray-500">No tasks have been added to this action plan yet.</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
           
           <div className="mt-12 print:mt-8 print:break-inside-avoid">
             <h3 className="text-xl font-semibold text-gray-900 print:text-lg">Summary</h3>
