@@ -104,6 +104,8 @@ const createActionPlan = async (event) => {
       tasks,
       owner,
       dueDate,
+      startDate,
+      endDate,
       createdBy,
       createdByName,
       useCaseId: bodyUseCaseId
@@ -193,6 +195,8 @@ const createActionPlan = async (event) => {
       tasks: tasks || [],
       owner: owner || '',
       dueDate: dueDate || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
       status: 'pending',
       createdBy: createdBy || 'anonymous',
       createdByName: createdByName || 'Anonymous User',
@@ -243,6 +247,8 @@ const updateActionPlan = async (event) => {
       tasks,
       owner,
       dueDate,
+      startDate,
+      endDate,
       status
     } = JSON.parse(event.body);
     
@@ -309,6 +315,16 @@ const updateActionPlan = async (event) => {
       expressionAttributeValues[':dueDate'] = dueDate;
     }
 
+    if (startDate) {
+      updateExpression.push('startDate = :startDate');
+      expressionAttributeValues[':startDate'] = startDate;
+    }
+
+    if (endDate) {
+      updateExpression.push('endDate = :endDate');
+      expressionAttributeValues[':endDate'] = endDate;
+    }
+
     if (status) {
       updateExpression.push('#status = :status');
       expressionAttributeValues[':status'] = status;
@@ -318,16 +334,22 @@ const updateActionPlan = async (event) => {
     updateExpression.push('updatedAt = :updatedAt');
     expressionAttributeValues[':updatedAt'] = new Date().toISOString();
 
-    await dynamoDB.update({
+    const updateParams = {
       TableName: actionPlanTable,
       Key: {
         id: finalActionPlanId
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
-      ExpressionAttributeNames: expressionAttributeNames,
       ReturnValues: 'ALL_NEW'
-    }).promise();
+    };
+
+    // Only add ExpressionAttributeNames if it's not empty
+    if (Object.keys(expressionAttributeNames).length > 0) {
+      updateParams.ExpressionAttributeNames = expressionAttributeNames;
+    }
+
+    await dynamoDB.update(updateParams).promise();
 
     const updatedActionPlanResult = await dynamoDB.get({
       TableName: actionPlanTable,

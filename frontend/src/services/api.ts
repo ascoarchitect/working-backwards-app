@@ -173,6 +173,8 @@ export const actionPlansAPI = {
     description: string;
     tasks: { description: string; assignee: string; dueDate: string }[];
     owner: string;
+    startDate?: string;
+    endDate?: string;
   }) => {
     const response = await api.post(`/workshop-actionplans/${workshopId}`, { ...data, useCaseId });
     return response.data.actionPlan || {};
@@ -188,6 +190,8 @@ export const actionPlansAPI = {
       status?: 'not_started' | 'in_progress' | 'completed';
     }>;
     owner?: string;
+    startDate?: string;
+    endDate?: string;
     status?: 'not_started' | 'in_progress' | 'completed';
   }) => {
     const response = await api.put(`/workshop-actionplans/${workshopId}/actionplan/${actionPlanId}`, data);
