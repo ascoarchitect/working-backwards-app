@@ -272,13 +272,9 @@ const Report: React.FC = () => {
                         return (
                           <div key={consolidatedPainPoint.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200 border-l-4 border-l-green-500">
                             <div className="px-6 py-5">
-                              <div className="flex justify-between items-start mb-3">
+                              <div className="mb-3">
                                 <h5 className="text-lg font-medium text-gray-900">{consolidatedPainPoint.description}</h5>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(consolidatedPainPoint.impact || 'low')}`}>
-                                  {consolidatedPainPoint.impact || 'low'}
-                                </span>
                               </div>
-                              <p className="text-sm text-gray-500 mb-4">Category: {consolidatedPainPoint.category || 'Uncategorized'}</p>
                               
                               {/* Show linked individual pain points */}
                               {linkedPainPoints.length > 0 && (
@@ -340,12 +336,18 @@ const Report: React.FC = () => {
                           <div key={painPoint.id} className="bg-white overflow-hidden shadow rounded-lg print:shadow-none print:border print:border-gray-200">
                             <div className="px-4 py-5 sm:p-6">
                               <div className="flex justify-between items-start">
-                                <h5 className="text-lg font-medium text-gray-900">{painPoint.description}</h5>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(painPoint.impact || 'low')}`}>
-                                  {painPoint.impact || 'low'}
-                                </span>
+                                <div className="flex-1 pr-4">
+                                  <h5 className="text-lg font-medium text-gray-900">{painPoint.description}</h5>
+                                </div>
+                                <div className="flex flex-col items-end space-y-2">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImpactBadgeClass(painPoint.impact || 'low')}`}>
+                                    {painPoint.impact || 'low'}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {painPoint.category || 'Uncategorized'}
+                                  </span>
+                                </div>
                               </div>
-                              <p className="mt-1 text-sm text-gray-500">Category: {painPoint.category || 'Uncategorized'}</p>
                             </div>
                           </div>
                         ))}
