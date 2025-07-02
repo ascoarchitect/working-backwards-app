@@ -379,7 +379,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /workshop-usecases/{workshopId}/score
+            Path: /workshop-usecases/{workshopId}/usecase/{id}score
             Method: post
 
   ActionPlansFunction:
