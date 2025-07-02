@@ -5,7 +5,6 @@ Description: >
 
   SAM Template for Working Backwards Workshop Application
   
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Parameters:
   JwtSecretParameter:
     Type: String
