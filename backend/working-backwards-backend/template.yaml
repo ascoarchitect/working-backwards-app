@@ -408,7 +408,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /usecases/{useCaseId}/actionplans
+            Path: /workshop-actionplans/{workshopId}
             Method: post
         UpdateActionPlan:
           Type: Api
