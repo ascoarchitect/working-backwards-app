@@ -142,6 +142,8 @@ Resources:
           AttributeType: S
         - AttributeName: useCaseId
           AttributeType: S
+        - AttributeName: workshopId
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -149,6 +151,12 @@ Resources:
         - IndexName: UseCaseIndex
           KeySchema:
             - AttributeName: useCaseId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: WorkshopIndex
+          KeySchema:
+            - AttributeName: workshopId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
